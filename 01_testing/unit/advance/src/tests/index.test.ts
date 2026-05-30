@@ -4,7 +4,6 @@ import request from "supertest";
 import app from "../index.js";
 import Todo from "../schema.js";
 
-// MOCK MONGOOSE MODEL
 vi.mock("../schema.js", () => ({
     default: {
         create: vi.fn(),
