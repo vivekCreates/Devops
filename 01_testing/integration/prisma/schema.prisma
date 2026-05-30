@@ -1,0 +1,29 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Calculation {
+  id Int @default(autoincrement()) @id
+  a Int 
+  b Int
+  result Int
+  type Operation
+  createdAt DateTime @default(now())
+}
+
+enum Operation {
+  ADD
+  SUBTRACT
+  MULTIPLY
+  DIVIDE
+}
