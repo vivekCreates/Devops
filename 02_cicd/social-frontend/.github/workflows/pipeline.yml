@@ -24,7 +24,7 @@ jobs:
 
       - name: Build Frontend Image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/social-frontend:latest ./frontend
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/social-frontend:latest .
 
       - name: Push Frontend Image
         run: |
