@@ -86,6 +86,7 @@ function App() {
           <a href="#features">Features</a>
           <a href="#how-it-works">How it works</a>
           <a href="#testimonials">Reviews</a>
+          <a href="#About us">About us</a>
         </nav>
 
         <div className="nav-actions">
