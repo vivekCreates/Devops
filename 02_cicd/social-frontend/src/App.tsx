@@ -103,7 +103,7 @@ function App() {
         <section className="hero">
           <div className="hero-copy">
             <p className="eyebrow">The social platform for modern communities</p>
-            <h1>Share moments. Build connection. Grow faster.</h1>
+            <h1>Share moments. Build connection World wide.</h1>
             <p className="hero-subtitle">
               Pulse brings messaging, content, and creator commerce into one
               elegant experience designed for people who want meaningful online
@@ -122,7 +122,6 @@ function App() {
             <ul className="social-proof" aria-label="Social proof highlights">
               <li>⭐ 4.9/5 app store rating</li>
               <li>🚀 120K+ creators onboarded</li>
-              <li>🧠 AI-powered content tools</li>
             </ul>
           </div>
 
