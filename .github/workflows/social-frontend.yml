@@ -21,17 +21,17 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          
+
 
       - name: Build Image
         run: |
-          docker build \
+          sudo docker build \
             -t ${{ secrets.DOCKER_USERNAME }}/social-frontend:latest \
             ./02_cicd/social-frontend
 
       - name: Push Image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/social-frontend:latest
+          sudodocker push ${{ secrets.DOCKER_USERNAME }}/social-frontend:latest
 
   deploy:
     needs: build-and-push
@@ -45,12 +45,12 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/social-frontend:latest
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/social-frontend:latest
 
-            docker stop social-frontend || true
-            docker rm social-frontend || true
+            sudo docker stop social-frontend || true
+            sudo docker rm social-frontend || true
 
-            docker run -d \
+            sudo docker run -d \
               --name social-frontend \
               --restart unless-stopped \
               -p 80:3000 \
