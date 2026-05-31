@@ -30,8 +30,7 @@ jobs:
 
       - name: Push Image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/social-frontend:latest \
-            ./02_cicd/social-frontend
+          docker push ${{ secrets.DOCKER_USERNAME }}/social-frontend:latest
 
   deploy:
     needs: build-and-push
