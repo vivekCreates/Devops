@@ -29,3 +29,26 @@ jobs:
       - name: Push Frontend Image
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/social-frontend:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKER_USERNAME }}/social-frontend:latest
+
+            docker stop social-frontend || true
+            docker rm social-frontend || true
+
+            docker run -d \
+              --name social-frontend \
+              --restart unless-stopped \
+              -p 80:3000 \
+              ${{ secrets.DOCKER_USERNAME }}/social-frontend:latest
