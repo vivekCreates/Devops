@@ -25,13 +25,13 @@ jobs:
 
       - name: Build Image
         run: |
-          sudo docker build \
+          docker build \
             -t ${{ secrets.DOCKER_USERNAME }}/social-frontend:latest \
             ./02_cicd/social-frontend
 
       - name: Push Image
         run: |
-          sudo docker push ${{ secrets.DOCKER_USERNAME }}/social-frontend:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/social-frontend:latest
 
   deploy:
     needs: build-and-push
