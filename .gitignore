@@ -10,3 +10,6 @@ coverage
 *.iml
 *.suo
 *.ntvs*
+
+.venv/
+__pycache__/
