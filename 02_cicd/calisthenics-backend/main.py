@@ -3,6 +3,11 @@ from data import workouts
 
 app = FastAPI()
 
+@app.get("/")
+def home():
+    return {
+        "message":"Welcome to the Calisthenics Workout plan"
+    }
 
 @app.get("/workouts")
 def get_workout(type: str = "push", level: str = "basic"):
