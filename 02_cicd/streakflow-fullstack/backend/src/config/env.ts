@@ -1,7 +1,22 @@
 import { config } from "dotenv";
 import { z } from "zod";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Resolve .env from project root (two levels up from dist/config/ or src/config/)
+const envPath = path.resolve(__dirname, "..", "..", ".env");
+const result = config({ path: envPath });
+
+if (result.error) {
+  console.error(`[env] Failed to load .env from: ${envPath}`);
+  console.error(`[env] Error: ${result.error.message}`);
+} else {
+  console.log(`[env] Loaded .env from: ${envPath} (${Object.keys(result.parsed || {}).length} vars)`);
+}
+
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
