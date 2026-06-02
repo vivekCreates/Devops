@@ -1,4 +1,4 @@
-name: calisthenics Backend CI/CD
+name: Streakflow Backend CI/CD
 
 on:
   push:
