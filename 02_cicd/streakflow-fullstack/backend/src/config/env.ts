@@ -11,12 +11,11 @@ const envPath = path.resolve(__dirname, "..", "..", ".env");
 const result = config({ path: envPath });
 
 if (result.error) {
-  console.error(`[env] Failed to load .env from: ${envPath}`);
-  console.error(`[env] Error: ${result.error.message}`);
+  // Not a fatal error — env vars may come from docker run -e or --env-file
+  console.warn(`[env] No .env file found at: ${envPath} (will use process environment)`);
 } else {
   console.log(`[env] Loaded .env from: ${envPath} (${Object.keys(result.parsed || {}).length} vars)`);
 }
-
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
