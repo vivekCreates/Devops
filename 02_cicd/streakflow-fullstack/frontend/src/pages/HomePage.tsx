@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Flame, Plus, Check, X } from 'lucide-react'
+import { useAuthStore } from '../states/auth'
 
 interface Habit {
   id: number
@@ -26,7 +27,7 @@ const HomePage = () => {
   const completedCount = habits.filter((h) => h.done).length
   const totalCount = habits.length
   const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
-
+  const {user,logout} = useAuthStore();
   // Determine greeting based on time of day
   const hour = new Date().getHours()
   const greeting =
@@ -74,14 +75,20 @@ const HomePage = () => {
       >
         <div>
           <h1 className="text-[1.55rem] sm:text-[1.7rem] font-extrabold text-text-dark tracking-tight leading-tight">
-            {greeting}, Vivek <span className="inline-block text-xl">👋</span>
+            {greeting}, {user?.fullName} <span className="inline-block text-xl">👋</span>
           </h1>
           <p className="mt-1 text-[0.85rem] text-text-dark-secondary font-normal">
             You're on a roll! Keep it up 🔥
           </p>
         </div>
+        <div onClick={()=>{
+          logout()
+        }
+        } className="w-11 h-11 sm:w-xl sm:h-12 py-4 px-4 rounded-e-3xl bg-gradient-to-br from-sf-teal-light to-sf-teal flex items-center justify-center text-white text-lg font-bold shadow-md shrink-0">
+          Logout
+        </div>
         <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-sf-teal-light to-sf-teal flex items-center justify-center text-white text-lg font-bold shadow-md shrink-0">
-          V
+          {user?.fullName.charAt(0).toUpperCase()}
         </div>
       </motion.header>
 

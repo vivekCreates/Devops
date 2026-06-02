@@ -3,12 +3,15 @@ import { motion } from 'framer-motion'
 import { User, Mail, Lock, Eye, EyeOff, Rocket } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Logo from '../components/Logo'
+import { useAuthStore } from '../states/auth'
+import Loader from '../components/Loader'
 
 const SignUpPage = () => {
   const navigate = useNavigate()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [agreed, setAgreed] = useState(false)
+  const { register,isLoading } = useAuthStore();
 
   const [form, setForm] = useState({
     fullName: '',
@@ -17,6 +20,7 @@ const SignUpPage = () => {
     confirmPassword: '',
   })
 
+  const { fullName, email, password, confirmPassword } = form;
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
@@ -198,12 +202,28 @@ const SignUpPage = () => {
         {/* Submit Button */}
         <motion.button
           type="submit"
+          onClick={() => {
+            register({ fullName, email, password, confirmPassword }
+            )
+              setForm({
+              fullName: "",
+              email: "",
+              password: "",
+              confirmPassword: ""
+            })
+            navigate("/home")
+          }
+          }
           className="btn-shimmer w-full h-12 sm:h-[52px] bg-surface-dark text-white rounded-xl text-[0.935rem] sm:text-base font-semibold flex items-center justify-center gap-2 cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.3)] active:translate-y-0 mt-1"
           id="create-account-btn"
           whileTap={{ scale: 0.98 }}
         >
           <Rocket size={18} />
-          Create Account
+          {
+            isLoading ? <Loader/>:
+            <span>Create Account</span>
+          }
+          
         </motion.button>
       </motion.form>
 
@@ -217,7 +237,9 @@ const SignUpPage = () => {
         Already have an account?{' '}
         <button
           type="button"
-          onClick={() => navigate('/signin')}
+          onClick={
+            () => navigate("/signin")
+          }
           className="text-white font-bold bg-transparent border-none cursor-pointer underline underline-offset-2 text-sm hover:decoration-2"
         >
           Sign In

@@ -3,6 +3,8 @@ import { motion } from 'framer-motion'
 import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Logo from '../components/Logo'
+import { useAuthStore } from '../states/auth'
+import Loader from '../components/Loader'
 
 const SignInPage = () => {
   const navigate = useNavigate()
@@ -12,6 +14,9 @@ const SignInPage = () => {
     email: '',
     password: '',
   })
+
+  const {email,password} = form;
+  const {login,isLoading} = useAuthStore();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -134,12 +139,19 @@ const SignInPage = () => {
         {/* Submit Button */}
         <motion.button
           type="submit"
+          onClick={()=>{
+            login({email,password})
+            navigate("/home")
+          }}
           className="btn-shimmer w-full h-12 sm:h-[52px] bg-surface-dark text-white rounded-xl text-[0.935rem] sm:text-base font-semibold flex items-center justify-center gap-2 cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.3)] active:translate-y-0 mt-1"
           id="sign-in-btn"
           whileTap={{ scale: 0.98 }}
         >
           <LogIn size={18} />
-          Sign In
+          {
+            isLoading ? <Loader/>: <span>SignIn</span>
+          }
+          
         </motion.button>
       </motion.form>
 
