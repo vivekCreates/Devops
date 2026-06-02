@@ -30,7 +30,7 @@ app.get("/health", (_req, res) => {
     success: true,
     data: {
       status: "ok",
-      service: "streakflow ",
+      service: "streakflow",
       timestamp: new Date().toISOString(),
     },
   });
