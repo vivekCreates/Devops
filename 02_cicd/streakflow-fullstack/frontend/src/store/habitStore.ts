@@ -23,6 +23,8 @@ export interface Habit {
 interface createHabitPayload {
     name: string;
     icon: string;
+    reminderEnabled?: boolean;
+    reminderTime?: string | null;
 }
 
 interface updateHabitPayload {
@@ -60,8 +62,8 @@ export const useHabitStore = create<HabitState>((set,get) => ({
             id: tempId,
             name: payload.name,
             icon: payload.icon,
-            reminderEnabled: false,
-            reminderTime: null,
+            reminderEnabled: payload.reminderEnabled ?? false,
+            reminderTime: payload.reminderTime ?? null,
             status: "ACTIVE" as const,
             currentStreak: 0,
             bestStreak: 0,

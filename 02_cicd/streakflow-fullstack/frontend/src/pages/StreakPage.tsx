@@ -1,20 +1,21 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ChevronLeft, Pencil, Trash2, Flame, Trophy, Snowflake, Check, Calendar } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { Flame, Trophy, Snowflake, Check, Calendar, Clock } from 'lucide-react'
 import { useStatStore } from '../store/statStore'
 
 
 const StreakPage = () => {
 
+  const {dashboardData,getDashboardStats} = useStatStore();
+
+  // Get the first habit's data for display
+  const habit = dashboardData?.habits?.[0]
+
 useEffect(()=>{
   getDashboardStats()
 },[])
-  const navigate = useNavigate()
   const [markedToday, setMarkedToday] = useState(false)
   const [freezesLeft, setFreezesLeft] = useState(2)
-
-  const {dashboardData,getDashboardStats} = useStatStore();
 
 
   const handleMarkComplete = () => {
@@ -42,28 +43,7 @@ useEffect(()=>{
           background: 'linear-gradient(160deg, #2cb5a0 0%, #4dc9b4 40%, #7dd8c8 100%)',
         }}
       >
-        {/* Top Nav */}
-        <motion.div
-          className="flex items-center justify-between mb-8"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <button
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white cursor-pointer hover:bg-white/30 transition-colors"
-            onClick={() => navigate(-1)}
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <div className="flex items-center gap-2.5">
-            <button className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white cursor-pointer hover:bg-white/30 transition-colors">
-              <Pencil size={16} />
-            </button>
-            <button className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white cursor-pointer hover:bg-white/30 transition-colors">
-              <Trash2 size={16} />
-            </button>
-          </div>
-        </motion.div>
+
 
         {/* Habit Info */}
         <motion.div
@@ -73,14 +53,19 @@ useEffect(()=>{
           transition={{ duration: 0.5, delay: 0.1 }}
         >
           <div className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-2xl bg-white/25 backdrop-blur-md flex items-center justify-center text-3xl sm:text-[2rem] mb-3">
-           i
+            {habit?.icon || '🎯'}
           </div>
           <h1 className="text-xl sm:text-[1.4rem] font-extrabold text-white tracking-tight">
-            n
+            {habit?.name || 'My Habit'}
           </h1>
-          <p className="text-[0.82rem] sm:text-sm text-white/75 mt-1 font-medium">
-            s
-          </p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <Clock size={14} className="text-white/70" />
+            <p className="text-[0.82rem] sm:text-sm text-white/75 font-medium">
+              {habit?.reminderTime
+                ? `Scheduled at ${habit.reminderTime}`
+                : 'No schedule set'}
+            </p>
+          </div>
         </motion.div>
       </div>
 

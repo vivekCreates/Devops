@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Flame, Plus, Check, X, Pencil, Trash2, AlertTriangle } from 'lucide-react'
+import { Flame, Plus, Check, X, Pencil, Trash2, AlertTriangle, Clock } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
 import { useHabitStore, type Habit } from '../store/habitStore'
 
@@ -15,12 +15,16 @@ const HomePage = () => {
   const [showAddModal, setShowAddModal] = useState(false)
   const [newHabitName, setNewHabitName] = useState('')
   const [newHabitIcon, setNewHabitIcon] = useState('✨')
+  const [newHabitScheduleEnabled, setNewHabitScheduleEnabled] = useState(false)
+  const [newHabitScheduleTime, setNewHabitScheduleTime] = useState('08:00')
 
   // Edit state
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null)
   const [editHabitName, setEditHabitName] = useState('')
   const [editHabitIcon, setEditHabitIcon] = useState('✨')
+  const [editHabitScheduleEnabled, setEditHabitScheduleEnabled] = useState(false)
+  const [editHabitScheduleTime, setEditHabitScheduleTime] = useState('08:00')
 
   // Delete state
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -49,11 +53,15 @@ const HomePage = () => {
     if (!newHabitName.trim()) return
     const newHabit = {
       name: newHabitName.trim(),
-      icon:newHabitIcon
+      icon: newHabitIcon,
+      reminderEnabled: newHabitScheduleEnabled,
+      reminderTime: newHabitScheduleEnabled ? newHabitScheduleTime : null,
     }
     createHabit(newHabit)
     setNewHabitName('')
     setNewHabitIcon('✨')
+    setNewHabitScheduleEnabled(false)
+    setNewHabitScheduleTime('08:00')
     setShowAddModal(false)
   }
 
@@ -62,6 +70,8 @@ const HomePage = () => {
     setEditingHabit(habit)
     setEditHabitName(habit.name)
     setEditHabitIcon(habit.icon)
+    setEditHabitScheduleEnabled(habit.reminderEnabled)
+    setEditHabitScheduleTime(habit.reminderTime || '08:00')
     setShowEditModal(true)
   }
 
@@ -71,6 +81,8 @@ const HomePage = () => {
     await updateHabit(editingHabit.id, {
       name: editHabitName.trim(),
       icon: editHabitIcon,
+      reminderEnabled: editHabitScheduleEnabled,
+      reminderTime: editHabitScheduleEnabled ? editHabitScheduleTime : null,
     })
     setShowEditModal(false)
     setEditingHabit(null)
@@ -359,6 +371,46 @@ const HomePage = () => {
                 ))}
               </div>
 
+              {/* Schedule Time */}
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[0.82rem] font-medium text-text-dark-secondary flex items-center gap-1.5">
+                    <Clock size={14} className="text-sf-teal" />
+                    Schedule Reminder
+                  </label>
+                  <button
+                    type="button"
+                    className={`relative w-11 h-6 rounded-full transition-colors duration-300 cursor-pointer ${
+                      newHabitScheduleEnabled ? 'bg-sf-teal' : 'bg-gray-200'
+                    }`}
+                    onClick={() => setNewHabitScheduleEnabled(!newHabitScheduleEnabled)}
+                    id="new-habit-schedule-toggle"
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 ${
+                        newHabitScheduleEnabled ? 'translate-x-5' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                </div>
+                {newHabitScheduleEnabled && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    <input
+                      type="time"
+                      value={newHabitScheduleTime}
+                      onChange={(e) => setNewHabitScheduleTime(e.target.value)}
+                      className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-gray-50 text-text-dark text-[0.92rem] font-medium outline-none transition-all duration-200 focus:border-sf-teal focus:ring-2 focus:ring-sf-teal/15"
+                      id="new-habit-schedule-time"
+                    />
+                  </motion.div>
+                )}
+              </div>
+
               {/* Add Button */}
               <motion.button
                 className="w-full h-12 mt-6 bg-surface-dark text-white rounded-xl text-[0.92rem] font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.25)] active:translate-y-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
@@ -455,6 +507,46 @@ const HomePage = () => {
                       {emoji}
                     </button>
                   ))}
+                </div>
+
+                {/* Schedule Time */}
+                <div className="mt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-[0.82rem] font-medium text-text-dark-secondary flex items-center gap-1.5">
+                      <Clock size={14} className="text-sf-teal" />
+                      Schedule Reminder
+                    </label>
+                    <button
+                      type="button"
+                      className={`relative w-11 h-6 rounded-full transition-colors duration-300 cursor-pointer ${
+                        editHabitScheduleEnabled ? 'bg-sf-teal' : 'bg-gray-200'
+                      }`}
+                      onClick={() => setEditHabitScheduleEnabled(!editHabitScheduleEnabled)}
+                      id="edit-habit-schedule-toggle"
+                    >
+                      <span
+                        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 ${
+                          editHabitScheduleEnabled ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  {editHabitScheduleEnabled && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.25 }}
+                    >
+                      <input
+                        type="time"
+                        value={editHabitScheduleTime}
+                        onChange={(e) => setEditHabitScheduleTime(e.target.value)}
+                        className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-gray-50 text-text-dark text-[0.92rem] font-medium outline-none transition-all duration-200 focus:border-sf-teal focus:ring-2 focus:ring-sf-teal/15"
+                        id="edit-habit-schedule-time"
+                      />
+                    </motion.div>
+                  )}
                 </div>
 
                 {/* Action Buttons */}

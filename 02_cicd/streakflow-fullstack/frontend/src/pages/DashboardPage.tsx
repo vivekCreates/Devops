@@ -22,8 +22,7 @@ const DashboardPage = () => {
 
   const { user, today, stats } = dashboardData;
 
-  const todayIndex = new Date().getDay();
-  const todayMon = todayIndex === 0 ? 6 : todayIndex - 1;
+  const todayDateStr = new Date().toISOString().split('T')[0];
 
   const maxBar = Math.max(
     ...stats.weeklyProgress.map((d) => d.completedHabits),
@@ -71,7 +70,7 @@ const DashboardPage = () => {
         <div className="flex items-end gap-2 h-[140px]">
           {stats.weeklyProgress.map((day, i) => {
             const height = (day.completedHabits / maxBar) * 100;
-            const isToday = i === todayMon;
+            const isToday = day.date === todayDateStr;
 
             return (
               <div key={day.date} className="flex-1 flex flex-col items-center">
@@ -86,7 +85,7 @@ const DashboardPage = () => {
                 />
 
                 <span className="text-[10px] mt-1 text-gray-500">
-                  {new Date(day.date).toLocaleDateString("en-US", {
+                  {new Date(day.date + 'T00:00:00').toLocaleDateString("en-US", {
                     weekday: "short",
                   })}
                 </span>

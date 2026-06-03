@@ -2,7 +2,7 @@ import apiClient, { API_URL } from ".";
 
 
 
-export const createHabitApi = async (habitData: { name: string; icon: string }) => {
+export const createHabitApi = async (habitData: { name: string; icon: string; reminderEnabled?: boolean; reminderTime?: string | null }) => {
     return apiClient.post(`${API_URL}/habits`, habitData,{
         headers: {
             "Content-Type": "application/json",
@@ -20,7 +20,7 @@ export const getHabitsApi = async () => {
     return apiClient.get(`${API_URL}/habits`);
 }
 
-export const updateHabitApi = async (habitId: string, habitData: { name?: string; icon?: string }) => {
+export const updateHabitApi = async (habitId: string, habitData: { name?: string; icon?: string; reminderEnabled?: boolean; reminderTime?: string | null }) => {
     return apiClient.patch(`${API_URL}/habits/${habitId}`, habitData);
 }
 
