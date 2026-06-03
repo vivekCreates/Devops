@@ -9,6 +9,7 @@ import {
   refreshSession,
   registerUser,
 } from "./auth.service.js";
+import { env } from "../../config/env.js";
 
 type CookieOptions = {
   httpOnly: boolean;
@@ -17,13 +18,15 @@ type CookieOptions = {
   maxAge: number;
 };
 
-
-
+// In production the frontend and backend are typically on different origins
+// (e.g. frontend on Vercel, backend on EC2). Cross-origin cookies require
+// sameSite "none" + secure (HTTPS). In development we use "lax" over HTTP.
+const isProduction = env.NODE_ENV === "production";
 
 const options: CookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 }
 

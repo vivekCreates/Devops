@@ -19,7 +19,7 @@ const getBearerToken = (authorizationHeader?: string) => {
 
 export const authenticate = async (req: Request, _res: Response, next: NextFunction) => {
   try {
-    const token = getBearerToken(req.headers.authorization);
+    const token = getBearerToken(req.headers.authorization) || req.cookies?.accessToken;
     if (!token) {
       throw new AppError("Unauthorized", 401);
     }
