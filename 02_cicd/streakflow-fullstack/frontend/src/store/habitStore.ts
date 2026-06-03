@@ -5,7 +5,7 @@ type HabitStatus = "ACTIVE" | "INACTIVE" | "COMPLETED";
 
 
 
-interface Habit {
+export interface Habit {
     id: string;
     name: string;
     icon: string;
