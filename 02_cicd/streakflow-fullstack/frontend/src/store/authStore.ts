@@ -127,11 +127,11 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
 
       const { data } = await getCurrentUserApi();
-      const {user} = data.data;
-
+    
+    
 
       set({
-        user:user,
+        user:data.data,
         isAuthenticated: true,
         isLoading: false,
       });

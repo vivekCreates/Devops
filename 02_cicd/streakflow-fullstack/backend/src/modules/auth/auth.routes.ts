@@ -8,6 +8,6 @@ export const authRouter = Router();
 
 authRouter.post("/register", validateRequest(registerSchema), register);
 authRouter.post("/login", validateRequest(loginSchema), login);
-authRouter.post("/refresh", validateRequest(refreshSchema), refresh);
-authRouter.post("/logout", validateRequest(logoutSchema), logout);
+authRouter.post("/refresh", refresh);
+authRouter.post("/logout", logout);
 authRouter.get("/me", authenticate, me);

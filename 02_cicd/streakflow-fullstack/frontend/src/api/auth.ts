@@ -1,7 +1,5 @@
-import apiClient from '.';
+import apiClient, { API_URL } from '.';
 
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://13.60.170.161/api/v1';
 
 export const signUpApi = async (payload: { fullName: string; email: string; password: string, confirmPassword: string }) => {
     return apiClient.post(`${API_URL}/auth/register`, payload, { withCredentials: true });
