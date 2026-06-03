@@ -133,23 +133,30 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return;
     }
 
-    set({ accessToken: token,isAuthenticated: true });
+    set({ accessToken: token, isAuthenticated: true });
 
     try {
       const { data } = await getCurrentUserApi();
 
+      // Update with the latest token in case it was refreshed
+      const latestToken = localStorage.getItem("accessToken") || "";
+
       set({
         user: data.data,
         isAuthenticated: true,
+        accessToken: latestToken,
       });
     } catch (error: any) {
-      // localStorage.removeItem("accessToken");
-
-      // set({
-      //   user: null,
-      //   isAuthenticated: false,
-      //   accessToken: "",
-      // });
+      // If the token refresh also failed, localStorage will be cleared
+      // by the response interceptor — reset auth state accordingly
+      const stillHasToken = localStorage.getItem("accessToken");
+      if (!stillHasToken) {
+        set({
+          user: null,
+          isAuthenticated: false,
+          accessToken: "",
+        });
+      }
     }
   },
 

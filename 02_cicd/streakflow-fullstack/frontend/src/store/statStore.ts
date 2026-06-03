@@ -65,7 +65,7 @@ export interface Stats {
   bestStreak: number;
   weeklyProgress: DashboardWeeklyProgress[];
   activityHeatmap: DashboardActivityHeatmap[];
-  habitLeaderboard: LeaderboardItem[];
+  leaderboard: LeaderboardItem[];
 }
 
 export interface DashboardResponse {

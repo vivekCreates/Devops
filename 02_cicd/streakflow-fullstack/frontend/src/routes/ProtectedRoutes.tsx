@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import Navbar from "../components/Navbar";
 
 const ProtectedRoute = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -8,7 +9,12 @@ const ProtectedRoute = () => {
     return <Navigate to="/signin" replace />;
   }
 
-  return <Outlet />;
+  return (
+    <>
+      <Navbar />
+      <Outlet />
+    </>
+  );
 };
 
 export default ProtectedRoute;

@@ -8,38 +8,54 @@ import DashboardPage from './pages/DashboardPage'
 import PublicRoute from './routes/PublicRoutes'
 import ProtectedRoute from './routes/ProtectedRoutes'
 import { useAuthStore } from './store/authStore'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useHabitStore } from './store/habitStore'
+import { AnimatePresence } from 'framer-motion'
+import Loader from './components/Loader'
 
 
 function App() {
   const {getCurrentUser,hydrateAuth} = useAuthStore();
+  const [appReady, setAppReady] = useState(false)
 
 
   useEffect(() => {
     hydrateAuth();
-    getCurrentUser();
+    getCurrentUser().finally(() => {
+      // Small delay so the loader animation plays smoothly
+      setTimeout(() => setAppReady(true), 800)
+    });
   }, [getCurrentUser]);
 
 
 
   return (
-    <Routes>
-      <Route element={<PublicRoute/>}>
-      <Route path="/" element={<WelcomePage />} />
-      <Route path="/signup" element={<SignUpPage />} />
-      <Route path="/signin" element={<SignInPage />} />
-      </Route>
+    <>
+      {/* Fullscreen splash loader during initial hydration */}
+      <AnimatePresence>
+        {!appReady && <Loader message="Getting things ready" />}
+      </AnimatePresence>
+
+      {appReady && (
+        <Routes>
+          <Route element={<PublicRoute/>}>
+          <Route path="/" element={<WelcomePage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/signin" element={<SignInPage />} />
+          </Route>
 
 
-      <Route element={<ProtectedRoute/>}>
-      <Route path="/home" element={<HomePage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
-      <Route path="/streak" element={<StreakPage />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-      </Route>
-    </Routes>
+          <Route element={<ProtectedRoute/>}>
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/streak" element={<StreakPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      )}
+    </>
   )
 }
 
 export default App
+
