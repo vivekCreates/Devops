@@ -50,13 +50,13 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const refresh = asyncHandler(async (req: Request, res: Response) => {
-  const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+  const refreshToken = req.cookies.refreshToken;
   const data = await refreshSession(refreshToken);
   sendSuccess(res, 200, data, "Session refreshed");
 });
 
 export const logout = asyncHandler(async (req: Request, res: Response) => {
-  const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+  const refreshToken = req.cookies.refreshToken;
   await logoutUser(refreshToken);
   sendSuccess(res, 200, null, "Logged out");
 });
