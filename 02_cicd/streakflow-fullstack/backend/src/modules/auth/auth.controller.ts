@@ -23,10 +23,16 @@ type CookieOptions = {
 // sameSite "none" + secure (HTTPS). In development we use "lax" over HTTP.
 const isProduction = env.NODE_ENV === "production";
 
+// Only enable `secure` cookies when the frontend is served over HTTPS.
+// If the deployment uses plain HTTP (e.g. http://<ip>), secure cookies
+// won't be sent by the browser, breaking refresh/logout flows.
+const useSecureCookies =
+  isProduction && (env.FRONTEND_URL?.startsWith("https://") ?? false);
+
 const options: CookieOptions = {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
+    secure: useSecureCookies,
+    sameSite: useSecureCookies ? "none" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 }
 
@@ -54,7 +60,8 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const refresh = asyncHandler(async (req: Request, res: Response) => {
-  const refreshToken = req.cookies.refreshToken;
+  // Accept refresh token from cookie (preferred) or request body (fallback)
+  const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
   if (!refreshToken) {
     throw new AppError("Refresh token not found", 401);
   }
@@ -69,7 +76,8 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const logout = asyncHandler(async (req: Request, res: Response) => {
-  const refreshToken = req.cookies.refreshToken;
+  // Accept refresh token from cookie (preferred) or request body (fallback)
+  const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
   await logoutUser(refreshToken);
   res.clearCookie("accessToken", options);
   res.clearCookie("refreshToken", options);
