@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -18,15 +18,23 @@ const SignInPage = () => {
 
   const {email,password} = form;
   const {goToHome} = useNavigator();
-  const {login,isLoading} = useAuthStore();
+  const {login,isLoading, error, clearError} = useAuthStore();
+
+  // Clear any stale errors when this page mounts
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Sign in:', form)
+    const success = await login({ email, password })
+    if (success) {
+      goToHome()
+    }
   }
 
   const inputWrapperClass =
@@ -138,23 +146,29 @@ const SignInPage = () => {
           </div>
         </div>
 
+        {/* Error Message */}
+        {error && (
+          <motion.div
+            className="text-red-400 text-[0.82rem] text-center bg-red-500/10 border border-red-500/20 rounded-xl py-2.5 px-3"
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {error}
+          </motion.div>
+        )}
+
         {/* Submit Button */}
         <motion.button
           type="submit"
-          onClick={async()=>{
-            await login({email,password})
-            goToHome()
-            
-          }}
-          className="btn-shimmer w-full h-12 sm:h-[52px] bg-surface-dark text-white rounded-xl text-[0.935rem] sm:text-base font-semibold flex items-center justify-center gap-2 cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.3)] active:translate-y-0 mt-1"
+          disabled={isLoading}
+          className="btn-shimmer w-full h-12 sm:h-[52px] bg-surface-dark text-white rounded-xl text-[0.935rem] sm:text-base font-semibold flex items-center justify-center gap-2 cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.3)] active:translate-y-0 mt-1 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           id="sign-in-btn"
           whileTap={{ scale: 0.98 }}
         >
           <LogIn size={18} />
           {
-            isLoading ? <Loader/>: <span>SignIn</span>
+            isLoading ? <Loader/> : <span>Sign In</span>
           }
-          
         </motion.button>
       </motion.form>
 

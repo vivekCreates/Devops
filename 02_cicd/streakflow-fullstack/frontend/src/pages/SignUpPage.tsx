@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { User, Mail, Lock, Eye, EyeOff, Rocket } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -12,8 +12,13 @@ const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [agreed, setAgreed] = useState(false)
-  const { register,isLoading } = useAuthStore();
- const {goToHome} = useNavigator();
+  const { register, isLoading, error, clearError } = useAuthStore();
+  const { goToHome } = useNavigator();
+
+  // Clear any stale errors when this page mounts
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
   const [form, setForm] = useState({
     fullName: '',
     email: '',
@@ -26,9 +31,15 @@ const SignUpPage = () => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Sign up:', form)
+    if (password !== confirmPassword) {
+      return; // could show a local error here too
+    }
+    const success = await register({ fullName, email, password, confirmPassword })
+    if (success) {
+      goToHome()
+    }
   }
 
   const inputWrapperClass =
@@ -200,31 +211,30 @@ const SignUpPage = () => {
           </span>
         </label>
 
+        {/* Error Message */}
+        {error && (
+          <motion.div
+            className="text-red-400 text-[0.82rem] text-center bg-red-500/10 border border-red-500/20 rounded-xl py-2.5 px-3"
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {error}
+          </motion.div>
+        )}
+
         {/* Submit Button */}
         <motion.button
           type="submit"
-          onClick={async() => {
-             await register({ fullName, email, password, confirmPassword }
-             )
-             setForm({
-               fullName: "",
-               email: "",
-               password: "",
-               confirmPassword: ""
-              })
-              goToHome()
-          }
-          }
-          className="btn-shimmer w-full h-12 sm:h-[52px] bg-surface-dark text-white rounded-xl text-[0.935rem] sm:text-base font-semibold flex items-center justify-center gap-2 cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.3)] active:translate-y-0 mt-1"
+          disabled={isLoading || !agreed}
+          className="btn-shimmer w-full h-12 sm:h-[52px] bg-surface-dark text-white rounded-xl text-[0.935rem] sm:text-base font-semibold flex items-center justify-center gap-2 cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.3)] active:translate-y-0 mt-1 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           id="create-account-btn"
           whileTap={{ scale: 0.98 }}
         >
           <Rocket size={18} />
           {
-            isLoading ? <Loader/>:
+            isLoading ? <Loader/> :
             <span>Create Account</span>
           }
-          
         </motion.button>
       </motion.form>
 

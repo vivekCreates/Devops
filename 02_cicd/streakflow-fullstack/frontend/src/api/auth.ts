@@ -1,21 +1,29 @@
-import apiClient, { API_URL } from '.';
+import apiClient from ".";
 
+export const signUpApi = async (payload: {
+  fullName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}) => {
+  return apiClient.post("/auth/register", payload);
+};
 
-export const signUpApi = async (payload: { fullName: string; email: string; password: string, confirmPassword: string }) => {
-    return apiClient.post(`${API_URL}/auth/register`, payload, { withCredentials: true });
-}
+export const signInApi = async (payload: {
+  email: string;
+  password: string;
+}) => {
+  return apiClient.post("/auth/login", payload);
+};
 
-
-export const signInApi = async (payload: { email: string; password: string }) => {   
-    return apiClient.post(`${API_URL}/auth/login`, payload, { withCredentials: true });
-}
-
+export const refreshApi = async () => {
+  return apiClient.post("/auth/refresh");
+};
 
 export const logoutApi = async () => {
-    return apiClient.post(`${API_URL}/auth/logout`, {}, { withCredentials: true });
-}
-
+  return apiClient.post("/auth/logout");
+};
 
 export const getCurrentUserApi = async () => {
-    return apiClient.get(`${API_URL}/auth/me`, { withCredentials: true });
-}
+  return apiClient.get("/auth/me");
+};

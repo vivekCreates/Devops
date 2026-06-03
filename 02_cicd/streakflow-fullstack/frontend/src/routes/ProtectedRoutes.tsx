@@ -3,10 +3,15 @@ import { useAuthStore } from "../store/authStore";
 import Loader from "../components/Loader";
 
 const ProtectedRoute = () => {
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const { isAuthenticated, isLoading, hasInitialized } = useAuthStore();
 
-  if (isLoading) {
-    return <div className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]"><Loader/></div>;
+  // Wait for the initial session check before deciding
+  if (!hasInitialized || isLoading) {
+    return (
+      <div className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]">
+        <Loader />
+      </div>
+    );
   }
 
   return isAuthenticated ? (
