@@ -80,6 +80,7 @@ export const registerUser = async (payload: RegisterPayload) => {
   });
 
   const tokens = await issueTokenPair(prisma, user);
+  
   return { user: sanitizeUser(user), tokens };
 };
 

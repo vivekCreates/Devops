@@ -6,8 +6,8 @@ export const useNavigator = () => {
 
   return {
     goToHome: () => navigate(ROUTES.HOME),
-    goToLogin: () => navigate(ROUTES.LOGIN),
-    goToRegister: () => navigate(ROUTES.REGISTER),
+    goToSignIn: () => navigate(ROUTES.SIGNIN),
+    goToSignUp: () => navigate(ROUTES.SIGNUP),
     goToDashboard: () => navigate(ROUTES.DASHBOARD),
     goToStreak: () => navigate(ROUTES.STREAK),
 

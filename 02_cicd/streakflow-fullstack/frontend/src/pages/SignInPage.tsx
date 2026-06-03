@@ -3,8 +3,9 @@ import { motion } from 'framer-motion'
 import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Logo from '../components/Logo'
-import { useAuthStore } from '../states/auth'
+import { useAuthStore } from '../store/authStore'
 import Loader from '../components/Loader'
+import { useNavigator } from '../hooks/useNavigator'
 
 const SignInPage = () => {
   const navigate = useNavigate()
@@ -16,6 +17,7 @@ const SignInPage = () => {
   })
 
   const {email,password} = form;
+  const {goToHome} = useNavigator();
   const {login,isLoading} = useAuthStore();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,9 +141,10 @@ const SignInPage = () => {
         {/* Submit Button */}
         <motion.button
           type="submit"
-          onClick={()=>{
-            login({email,password})
-            navigate("/home")
+          onClick={async()=>{
+            await login({email,password})
+            goToHome()
+            
           }}
           className="btn-shimmer w-full h-12 sm:h-[52px] bg-surface-dark text-white rounded-xl text-[0.935rem] sm:text-base font-semibold flex items-center justify-center gap-2 cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.3)] active:translate-y-0 mt-1"
           id="sign-in-btn"

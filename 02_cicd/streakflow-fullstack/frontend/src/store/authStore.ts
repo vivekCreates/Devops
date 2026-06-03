@@ -40,12 +40,11 @@ interface AuthState {
   getCurrentUser: () => Promise<void>;
 }
 
-const storedUser = localStorage.getItem("user");
 const storedToken = localStorage.getItem("accessToken");
 
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: storedUser ? JSON.parse(storedUser) : null,
+  user: null,
   accessToken: storedToken || "",
   isAuthenticated: !!storedToken,
   isLoading: false,
@@ -61,11 +60,11 @@ export const useAuthStore = create<AuthState>((set) => ({
       const { data} = await signInApi(payload);
       const { user,tokens } = data.data;
 
-      localStorage.setItem("user", JSON.stringify(user));
+
       localStorage.setItem("accessToken", tokens.accessToken);
 
       set({
-        user: user,
+        user: null,
         accessToken: tokens.accessToken,
         isAuthenticated: true,
         isLoading: false,
@@ -88,11 +87,10 @@ export const useAuthStore = create<AuthState>((set) => ({
       const { data } = await signUpApi(payload);
       const { user, tokens } = data.data;
 
-      localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("accessToken", tokens.accessToken);
 
       set({
-        user: user,
+        user: null,
         accessToken: tokens.accessToken,
         isAuthenticated: true,
         isLoading: false,
@@ -109,7 +107,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       await logoutApi();
 
-      localStorage.removeItem("user");
       localStorage.removeItem("accessToken");
 
       set({
@@ -130,16 +127,15 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
 
       const { data } = await getCurrentUserApi();
+      const {user} = data.data;
 
-      localStorage.setItem("user", JSON.stringify(data.user));
 
       set({
-        user: data.user,
+        user:user,
         isAuthenticated: true,
         isLoading: false,
       });
-    } catch {
-      localStorage.removeItem("user");
+    } catch (error: any) {
       localStorage.removeItem("accessToken");
 
       set({

@@ -3,8 +3,9 @@ import { motion } from 'framer-motion'
 import { User, Mail, Lock, Eye, EyeOff, Rocket } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Logo from '../components/Logo'
-import { useAuthStore } from '../states/auth'
+import { useAuthStore } from '../store/authStore'
 import Loader from '../components/Loader'
+import { useNavigator } from '../hooks/useNavigator'
 
 const SignUpPage = () => {
   const navigate = useNavigate()
@@ -12,7 +13,7 @@ const SignUpPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [agreed, setAgreed] = useState(false)
   const { register,isLoading } = useAuthStore();
-
+ const {goToHome} = useNavigator();
   const [form, setForm] = useState({
     fullName: '',
     email: '',
@@ -202,16 +203,16 @@ const SignUpPage = () => {
         {/* Submit Button */}
         <motion.button
           type="submit"
-          onClick={() => {
-            register({ fullName, email, password, confirmPassword }
-            )
-              setForm({
-              fullName: "",
-              email: "",
-              password: "",
-              confirmPassword: ""
-            })
-            navigate("/home")
+          onClick={async() => {
+             await register({ fullName, email, password, confirmPassword }
+             )
+             setForm({
+               fullName: "",
+               email: "",
+               password: "",
+               confirmPassword: ""
+              })
+              goToHome()
           }
           }
           className="btn-shimmer w-full h-12 sm:h-[52px] bg-surface-dark text-white rounded-xl text-[0.935rem] sm:text-base font-semibold flex items-center justify-center gap-2 cursor-pointer relative overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.3)] active:translate-y-0 mt-1"

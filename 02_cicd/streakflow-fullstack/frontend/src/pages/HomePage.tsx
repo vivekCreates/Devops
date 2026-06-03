@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Flame, Plus, Check, X } from 'lucide-react'
-import { useAuthStore } from '../states/auth'
+import { useAuthStore } from '../store/authStore'
+import { useNavigator } from '../hooks/useNavigator'
+
 
 interface Habit {
   id: number
@@ -23,11 +25,13 @@ const HomePage = () => {
   const [showAddModal, setShowAddModal] = useState(false)
   const [newHabitName, setNewHabitName] = useState('')
   const [newHabitIcon, setNewHabitIcon] = useState('✨')
+  const {goToSignIn} = useNavigator();
+  const {user,logout} = useAuthStore();
+
 
   const completedCount = habits.filter((h) => h.done).length
   const totalCount = habits.length
   const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
-  const {user,logout} = useAuthStore();
   // Determine greeting based on time of day
   const hour = new Date().getHours()
   const greeting =
@@ -56,6 +60,8 @@ const HomePage = () => {
     setNewHabitIcon('✨')
     setShowAddModal(false)
   }
+ 
+   
 
   // Progress ring calculations
   const radius = 54
@@ -81,8 +87,9 @@ const HomePage = () => {
             You're on a roll! Keep it up 🔥
           </p>
         </div>
-        <div onClick={()=>{
-          logout()
+        <div onClick={async()=>{
+          await logout()
+          goToSignIn()
         }
         } className="w-11 h-11 sm:w-xl sm:h-12 py-4 px-4 rounded-e-3xl bg-gradient-to-br from-sf-teal-light to-sf-teal flex items-center justify-center text-white text-lg font-bold shadow-md shrink-0">
           Logout
