@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Flame, Plus, Check, X } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
 import { useNavigator } from '../hooks/useNavigator'
+import { useHabitStore } from '../store/habitStore'
 
 
 interface Habit {
@@ -13,24 +14,27 @@ interface Habit {
   done: boolean
 }
 
-const defaultHabits: Habit[] = [
-  { id: 1, name: 'Morning Run', icon: '🏃', streak: 5, done: false },
-  { id: 2, name: 'Read 20 Pages', icon: '📖', streak: 8, done: true },
-  { id: 3, name: 'Meditate', icon: '🧘', streak: 3, done: false },
-  { id: 4, name: 'Drink Water', icon: '💧', streak: 11, done: false },
-]
 
 const HomePage = () => {
-  const [habits, setHabits] = useState<Habit[]>(defaultHabits)
+  
+  useEffect(()=>{
+    getHabits()
+  },[])
+  
+
   const [showAddModal, setShowAddModal] = useState(false)
   const [newHabitName, setNewHabitName] = useState('')
   const [newHabitIcon, setNewHabitIcon] = useState('✨')
-  const {goToSignIn} = useNavigator();
+  const {goToSignIn,goToDashboard} = useNavigator();
   const {user,logout} = useAuthStore();
+  const {habits,completeHabit,createHabit,getHabits} = useHabitStore();
 
 
-  const completedCount = habits.filter((h) => h.done).length
-  const totalCount = habits.length
+  const completedCount = (habits ?? []).filter(
+  (h) => h.completedToday
+ ).length;
+
+  const totalCount = habits?.length
   const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
   // Determine greeting based on time of day
   const hour = new Date().getHours()
@@ -38,24 +42,16 @@ const HomePage = () => {
     hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
   // Streak (longest current streak)
-  const longestStreak = habits.reduce((max, h) => Math.max(max, h.streak), 0)
+  const longestStreak = habits.reduce((max, h) => Math.max(max, h.bestStreak), 0)
 
-  const toggleHabit = (id: number) => {
-    setHabits((prev) =>
-      prev.map((h) => (h.id === id ? { ...h, done: !h.done } : h))
-    )
-  }
 
   const addHabit = () => {
     if (!newHabitName.trim()) return
-    const newHabit: Habit = {
-      id: Date.now(),
+    const newHabit = {
       name: newHabitName.trim(),
-      icon: newHabitIcon,
-      streak: 0,
-      done: false,
+      icon:newHabitIcon
     }
-    setHabits((prev) => [...prev, newHabit])
+    createHabit(newHabit)
     setNewHabitName('')
     setNewHabitIcon('✨')
     setShowAddModal(false)
@@ -93,6 +89,9 @@ const HomePage = () => {
         }
         } className="w-11 h-11 sm:w-xl sm:h-12 py-4 px-4 rounded-e-3xl bg-gradient-to-br from-sf-teal-light to-sf-teal flex items-center justify-center text-white text-lg font-bold shadow-md shrink-0">
           Logout
+        </div>
+        <div onClick={()=>goToDashboard()} className="w-11 h-11 sm:w-xl sm:h-12 py-4 px-4 rounded-e-3xl bg-gradient-to-br from-sf-teal-light to-sf-teal flex items-center justify-center text-white text-lg font-bold shadow-md shrink-0">
+          dashboard
         </div>
         <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-sf-teal-light to-sf-teal flex items-center justify-center text-white text-lg font-bold shadow-md shrink-0">
           {user?.fullName.charAt(0).toUpperCase()}
@@ -170,11 +169,11 @@ const HomePage = () => {
             <motion.div
               key={habit.id}
               className={`flex items-center gap-3.5 sm:gap-4 p-3.5 sm:p-4 rounded-2xl transition-all duration-300 cursor-pointer ${
-                habit.done
+                habit.completedToday
                   ? 'bg-[#e6f9f4] shadow-[0_1px_8px_rgba(44,181,160,0.12)]'
                   : 'bg-white shadow-[0_1px_8px_rgba(0,0,0,0.05)]'
               }`}
-              onClick={() => toggleHabit(habit.id)}
+              onClick={async() => await completeHabit(habit.id)}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
@@ -184,7 +183,7 @@ const HomePage = () => {
             >
               {/* Icon */}
               <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-xl shrink-0 ${
-                habit.done ? 'bg-[#d0f0e8]' : 'bg-[#f0f7f5]'
+                habit.completedToday ? 'bg-[#d0f0e8]' : 'bg-[#f0f7f5]'
               }`}>
                 {habit.icon}
               </div>
@@ -192,25 +191,27 @@ const HomePage = () => {
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <h4 className={`text-[0.92rem] sm:text-[0.95rem] font-semibold leading-tight ${
-                  habit.done ? 'text-text-dark/60 line-through' : 'text-text-dark'
+                  habit.completedToday ? 'text-text-dark/60 line-through' : 'text-text-dark'
                 }`}>
                   {habit.name}
                 </h4>
                 <div className="flex items-center gap-1 mt-1">
                   <Flame size={12} className="text-orange-400" />
                   <span className="text-[0.75rem] sm:text-[0.78rem] text-sf-teal font-semibold">
-                    {habit.streak} days
+                    {habit.bestStreak} days
                   </span>
                 </div>
               </div>
 
               {/* Check Circle */}
-              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-300 ${
-                habit.done
+              <div 
+              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-300 ${
+                habit.completedToday
                   ? 'bg-sf-teal border-sf-teal'
                   : 'border-gray-200 bg-white hover:border-sf-teal/40'
-              }`}>
-                {habit.done && <Check size={16} className="text-white" strokeWidth={3} />}
+              }`}
+              >
+                {habit.completedToday&& <Check size={16} className="text-white" strokeWidth={3} />}
               </div>
             </motion.div>
           ))}

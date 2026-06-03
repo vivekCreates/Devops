@@ -12,13 +12,10 @@ const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [agreed, setAgreed] = useState(false)
-  const { register, isLoading, error, clearError } = useAuthStore();
+  const { register, isLoading, error } = useAuthStore();
   const { goToHome } = useNavigator();
 
-  // Clear any stale errors when this page mounts
-  useEffect(() => {
-    clearError();
-  }, [clearError]);
+
   const [form, setForm] = useState({
     fullName: '',
     email: '',

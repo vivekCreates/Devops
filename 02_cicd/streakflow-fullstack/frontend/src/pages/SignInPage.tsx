@@ -18,12 +18,8 @@ const SignInPage = () => {
 
   const {email,password} = form;
   const {goToHome} = useNavigator();
-  const {login,isLoading, error, clearError} = useAuthStore();
+  const {login,isLoading, error} = useAuthStore();
 
-  // Clear any stale errors when this page mounts
-  useEffect(() => {
-    clearError();
-  }, [clearError]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })

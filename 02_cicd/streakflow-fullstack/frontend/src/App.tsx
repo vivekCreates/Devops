@@ -9,16 +9,19 @@ import PublicRoute from './routes/PublicRoutes'
 import ProtectedRoute from './routes/ProtectedRoutes'
 import { useAuthStore } from './store/authStore'
 import { useEffect } from 'react'
+import { useHabitStore } from './store/habitStore'
 
 
 function App() {
-  const getCurrentUser = useAuthStore(
-    (state) => state.getCurrentUser
-  );
+  const {getCurrentUser,hydrateAuth} = useAuthStore();
+
 
   useEffect(() => {
+    hydrateAuth();
     getCurrentUser();
   }, [getCurrentUser]);
+
+
 
   return (
     <Routes>

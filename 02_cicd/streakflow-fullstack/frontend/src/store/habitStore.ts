@@ -114,7 +114,7 @@ export const useHabitStore = create<HabitState>((set,get) => ({
         set({ isLoading: true, error: null });
         try{
             const {data} = await getHabitsApi();
-            set({ habits: data.habits, isLoading: false });
+            set({ habits: data.data.habits, isLoading: false });
         }catch(error:any) {
             set({ error: error.message || "Failed to fetch habits" });
         }

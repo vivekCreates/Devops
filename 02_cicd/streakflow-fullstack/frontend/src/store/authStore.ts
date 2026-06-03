@@ -31,73 +31,38 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  hasInitialized: boolean; // true after the first /auth/me check completes
+  accessToken: string;
   error: string | null;
 
   login: (payload: LoginPayload) => Promise<boolean>;
   register: (payload: RegisterPayload) => Promise<boolean>;
   logout: () => Promise<void>;
   getCurrentUser: () => Promise<void>;
-  clearError: () => void;
+  hydrateAuth: () => void;
 }
 
-// ── Session cache helpers ──────────────────────────────────────────────
-// Persist the authenticated user in sessionStorage so that page refreshes
-// can hydrate instantly without waiting for a network round-trip.
-const SESSION_KEY = "streakflow_user";
-
-const persistUser = (user: User) => {
-  try {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
-  } catch {
-    // Storage full or disabled — non-critical
-  }
-};
-
-const loadCachedUser = (): User | null => {
-  try {
-    const raw = sessionStorage.getItem(SESSION_KEY);
-    return raw ? (JSON.parse(raw) as User) : null;
-  } catch {
-    return null;
-  }
-};
-
-const clearCachedUser = () => {
-  try {
-    sessionStorage.removeItem(SESSION_KEY);
-  } catch {
-    // non-critical
-  }
-};
-
-// ── Hydrate initial state from cache ───────────────────────────────────
-const cachedUser = loadCachedUser();
-
 export const useAuthStore = create<AuthState>((set, get) => ({
-  // If we have a cached user, start as authenticated & initialized immediately
-  // so the route guards never show a loader on refresh.
-  user: cachedUser,
-  isAuthenticated: !!cachedUser,
+  user: null,
+  isAuthenticated: false,
   isLoading: false,
-  hasInitialized: !!cachedUser, // true if cache exists → no loader
+  accessToken: localStorage.getItem("accessToken") || "",
   error: null,
 
-  // ── Login ────────────────────────────────────────────────────────────
-  // Returns true on success so the calling component can navigate.
+  /* ================= LOGIN ================= */
   login: async (payload) => {
     try {
       set({ isLoading: true, error: null });
 
       const { data } = await signInApi(payload);
-      const { user } = data.data;
+      const { user, tokens } = data.data;
 
-      persistUser(user);
+      localStorage.setItem("accessToken", tokens.accessToken);
+
       set({
         user,
+        accessToken: tokens.accessToken,
         isAuthenticated: true,
         isLoading: false,
-        hasInitialized: true,
       });
 
       return true;
@@ -110,20 +75,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  // ── Register ─────────────────────────────────────────────────────────
+  /* ================= REGISTER ================= */
   register: async (payload) => {
     try {
       set({ isLoading: true, error: null });
 
       const { data } = await signUpApi(payload);
-      const { user } = data.data;
+      const { user, tokens } = data.data;
 
-      persistUser(user);
+      localStorage.setItem("accessToken", tokens.accessToken);
+
       set({
         user,
+        accessToken: tokens.accessToken,
         isAuthenticated: true,
         isLoading: false,
-        hasInitialized: true,
       });
 
       return true;
@@ -136,65 +102,66 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  // ── Logout ───────────────────────────────────────────────────────────
+  /* ================= LOGOUT ================= */
   logout: async () => {
     try {
       await logoutApi();
     } catch (error) {
-      // Server might be unreachable — still clear local state
       console.error("Logout API error:", error);
     } finally {
-      clearCachedUser();
+      localStorage.removeItem("accessToken");
+
       set({
         user: null,
         isAuthenticated: false,
+        accessToken: "",
         error: null,
       });
     }
   },
 
-  // ── Get current user (session check) ─────────────────────────────────
-  // Called once on app mount to validate the cookie session.
-  // If we already hydrated from cache, skip showing a loader —
-  // just silently re-validate in the background.
+  /* ================= GET CURRENT USER ================= */
   getCurrentUser: async () => {
-    const state = get();
+    const token = localStorage.getItem("accessToken");
 
-    // Already initialized with a live API call — nothing to do
-    if (state.hasInitialized && state.user) return;
-
-    // If we have a cached user, we're already showing the app (no loader).
-    // Just validate silently in the background.
-    const hasCachedUser = !!state.user;
-
-    if (!hasCachedUser) {
-      // No cache — we must show a loader while we check
-      set({ isLoading: true });
-    }
-
-    try {
-      const { data } = await getCurrentUserApi();
-      const user = data.data;
-
-      persistUser(user);
-      set({
-        user,
-        isAuthenticated: true,
-        isLoading: false,
-        hasInitialized: true,
-      });
-    } catch {
-      // No valid session — clear everything
-      clearCachedUser();
+    if (!token) {
       set({
         user: null,
         isAuthenticated: false,
-        isLoading: false,
-        hasInitialized: true,
+        accessToken: "",
       });
+      return;
+    }
+
+    set({ accessToken: token,isAuthenticated: true });
+
+    try {
+      const { data } = await getCurrentUserApi();
+
+      set({
+        user: data.data,
+        isAuthenticated: true,
+      });
+    } catch (error: any) {
+      // localStorage.removeItem("accessToken");
+
+      // set({
+      //   user: null,
+      //   isAuthenticated: false,
+      //   accessToken: "",
+      // });
     }
   },
 
-  // ── Clear error (call on page transitions) ───────────────────────────
-  clearError: () => set({ error: null }),
+  /* ================= HYDRATE (on refresh) ================= */
+  hydrateAuth: () => {
+    const token = localStorage.getItem("accessToken");
+
+    if (token) {
+      set({
+        accessToken: token,
+        isAuthenticated: true,
+      });
+    }
+  },
 }));

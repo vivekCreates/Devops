@@ -3,7 +3,12 @@ import apiClient, { API_URL } from ".";
 
 
 export const createHabitApi = async (habitData: { name: string; icon: string }) => {
-    return apiClient.post(`${API_URL}/habits`, habitData);
+    return apiClient.post(`${API_URL}/habits`, habitData,{
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("accessToken") || ""}`,
+        },
+    });
 }
 
 export const completeHabitApi = async (habitId: string) => {
