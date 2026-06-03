@@ -54,7 +54,6 @@ jobs:
           envs: IMAGE_TAG,STREAKFLOW_ENV_FILE
           script: |
             set -e
-
             echo "$STREAKFLOW_ENV_FILE" > ~/streakflow-backend.env
 
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/streakflow-backend:$IMAGE_TAG

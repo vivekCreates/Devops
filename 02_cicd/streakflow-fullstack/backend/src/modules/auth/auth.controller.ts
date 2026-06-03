@@ -59,6 +59,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   sendSuccess(res, 200, data, "Login successful");
 });
 
+
 export const refresh = asyncHandler(async (req: Request, res: Response) => {
   // Accept refresh token from cookie (preferred) or request body (fallback)
   const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
