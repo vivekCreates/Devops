@@ -26,11 +26,6 @@ export const loginSchema = z.object({
   query: z.object({}).optional(),
 });
 
-export const refreshSchema = z.object({
-  body: z.object({}).optional(),
-  params: z.object({}).optional(),
-  query: z.object({}).optional(),
-});
 
 export const logoutSchema = z.object({
   body: z.object({}).optional(),

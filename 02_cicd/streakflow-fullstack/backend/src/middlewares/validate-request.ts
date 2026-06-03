@@ -7,6 +7,7 @@ export const validateRequest = (schema: ZodTypeAny) => {
       body: req.body ?? {},
       params: req.params ?? {},
       query: req.query ?? {},
+      cookie: req.cookies ?? {}
     });
     next();
   };
