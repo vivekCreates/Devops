@@ -27,17 +27,13 @@ export const loginSchema = z.object({
 });
 
 export const refreshSchema = z.object({
-  body: z.object({
-    refreshToken: z.string().min(20).optional(),
-  }).optional(),
+  body: z.object({}).optional(),
   params: z.object({}).optional(),
   query: z.object({}).optional(),
 });
 
 export const logoutSchema = z.object({
-  body: z.object({
-    refreshToken: z.string().min(20).optional(),
-  }),
+  body: z.object({}).optional(),
   params: z.object({}).optional(),
   query: z.object({}).optional(),
 });

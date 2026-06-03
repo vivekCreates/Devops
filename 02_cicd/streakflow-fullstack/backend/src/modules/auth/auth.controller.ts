@@ -1,5 +1,6 @@
 import type {  Request, Response } from "express";
 import { asyncHandler } from "../../utils/async-handler.js";
+import { AppError } from "../../errors/app-error.js";
 import { sendSuccess } from "../../utils/http-response.js";
 import {
   getCurrentUserProfile,
@@ -51,13 +52,24 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
 export const refresh = asyncHandler(async (req: Request, res: Response) => {
   const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) {
+    throw new AppError("Refresh token not found", 401);
+  }
   const data = await refreshSession(refreshToken);
+  res.cookie("refreshToken", data.tokens.refreshToken, {
+    ...options, maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+  res.cookie("accessToken", data.tokens.accessToken, {
+    ...options, maxAge: 15 * 60 * 1000, // 15 minutes
+  });
   sendSuccess(res, 200, data, "Session refreshed");
 });
 
 export const logout = asyncHandler(async (req: Request, res: Response) => {
   const refreshToken = req.cookies.refreshToken;
   await logoutUser(refreshToken);
+  res.clearCookie("accessToken", options);
+  res.clearCookie("refreshToken", options);
   sendSuccess(res, 200, null, "Logged out");
 });
 
