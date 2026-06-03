@@ -16,12 +16,12 @@ export const signInApi = async (payload: {
   return apiClient.post("/auth/login", payload);
 };
 
-export const refreshApi = async () => {
-  return apiClient.post("/auth/refresh");
+export const refreshApi = async (refreshToken: string) => {
+  return apiClient.post("/auth/refresh", { refreshToken });
 };
 
-export const logoutApi = async () => {
-  return apiClient.post("/auth/logout");
+export const logoutApi = async (refreshToken?: string) => {
+  return apiClient.post("/auth/logout", { refreshToken: refreshToken || "" });
 };
 
 export const getCurrentUserApi = async () => {

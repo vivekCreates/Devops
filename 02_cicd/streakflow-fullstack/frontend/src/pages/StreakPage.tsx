@@ -1,43 +1,21 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronLeft, Pencil, Trash2, Flame, Trophy, Snowflake, Check, Calendar } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useStatStore } from '../store/statStore'
 
-// Mock activity data for last 31 days
-const generateActivityData = () => {
-  const today = new Date()
-  const data: { date: Date; status: 'completed' | 'missed' | 'upcoming' }[] = []
-  for (let i = 30; i >= 0; i--) {
-    const d = new Date(today)
-    d.setDate(today.getDate() - i)
-    let status: 'completed' | 'missed' | 'upcoming'
-    if (i === 0) {
-      status = 'upcoming'
-    } else if (i <= 5) {
-      status = 'completed'
-    } else if (i <= 8) {
-      status = Math.random() > 0.3 ? 'completed' : 'missed'
-    } else {
-      status = Math.random() > 0.25 ? 'completed' : 'missed'
-    }
-    data.push({ date: d, status })
-  }
-  // Mark today as upcoming
-  data[data.length - 1].status = 'upcoming'
-  return data
-}
 
 const StreakPage = () => {
+
+useEffect(()=>{
+  getDashboardStats()
+},[])
   const navigate = useNavigate()
   const [markedToday, setMarkedToday] = useState(false)
   const [freezesLeft, setFreezesLeft] = useState(2)
-  const [activityData] = useState(generateActivityData)
 
-  const habitName = 'Morning Run'
-  const habitIcon = '🏃'
-  const habitSchedule = 'Daily · 07:00 AM'
-  const currentStreak = 12
-  const bestStreak = 18
+  const {dashboardData,getDashboardStats} = useStatStore();
+
 
   const handleMarkComplete = () => {
     setMarkedToday(true)
@@ -95,13 +73,13 @@ const StreakPage = () => {
           transition={{ duration: 0.5, delay: 0.1 }}
         >
           <div className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-2xl bg-white/25 backdrop-blur-md flex items-center justify-center text-3xl sm:text-[2rem] mb-3">
-            {habitIcon}
+           i
           </div>
           <h1 className="text-xl sm:text-[1.4rem] font-extrabold text-white tracking-tight">
-            {habitName}
+            n
           </h1>
           <p className="text-[0.82rem] sm:text-sm text-white/75 mt-1 font-medium">
-            {habitSchedule}
+            s
           </p>
         </motion.div>
       </div>
@@ -120,7 +98,7 @@ const StreakPage = () => {
         <div className="flex items-center gap-1.5 mb-0.5">
           <Flame size={22} className="text-orange-400" />
           <span className="text-[2rem] sm:text-[2.2rem] font-extrabold text-text-dark leading-none">
-            {currentStreak}
+            {dashboardData?.stats.totalCompletions}
           </span>
         </div>
         <span className="text-[0.8rem] sm:text-[0.85rem] text-text-dark-secondary font-semibold mb-2">
@@ -130,7 +108,7 @@ const StreakPage = () => {
         <div className="flex items-center gap-1.5 bg-[#fef9e7] px-3 py-1 rounded-full">
           <Trophy size={12} className="text-amber-500" />
           <span className="text-[0.75rem] sm:text-[0.78rem] font-bold text-amber-600">
-            Best: {bestStreak} days
+            Best: {dashboardData?.stats.bestStreak} days
           </span>
         </div>
       </motion.div>
@@ -160,13 +138,13 @@ const StreakPage = () => {
         {/* Grid */}
         <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
           <div className="grid grid-cols-7 gap-[5px] sm:gap-[6px] justify-items-center max-w-[280px] mx-auto">
-            {activityData.map((day, i) => {
-              const isToday = i === activityData.length - 1
+            {dashboardData && dashboardData.stats.activityHeatmap?.map((day, i) => {
+              const isToday = i === dashboardData?.stats?.activityHeatmap?.length - 1
               let bg = ''
               let border = ''
               if (markedToday && isToday) {
                 bg = 'bg-sf-teal'
-              } else if (day.status === 'completed') {
+              } else if (day.status === 'done') {
                 bg = 'bg-sf-teal'
               } else if (day.status === 'missed') {
                 bg = 'bg-red-200'
