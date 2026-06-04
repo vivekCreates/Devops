@@ -7,6 +7,7 @@ import {
   createHabit,
   listHabits,
   updateHabit,
+  freezeHabitForToday,
 } from "./habit.service.js";
 
 export const createHabitHandler = asyncHandler(async (req: Request, res: Response) => {
@@ -32,4 +33,9 @@ export const archiveHabitHandler = asyncHandler(async (req: Request, res: Respon
 export const completeHabitTodayHandler = asyncHandler(async (req: Request, res: Response) => {
   const data = await completeHabitForToday(req.user!.id, String(req.params.habitId));
   sendSuccess(res, 200, data, "Habit marked complete for today");
+});
+
+export const freezeHabitTodayHandler = asyncHandler(async (req: Request, res: Response) => {
+  const data = await freezeHabitForToday(req.user!.id, String(req.params.habitId));
+  sendSuccess(res, 200, data, "Streak freeze applied for today");
 });

@@ -27,3 +27,7 @@ export const updateHabitApi = async (habitId: string, habitData: { name?: string
 export const deleteHabitApi = async (habitId: string) => { 
     return apiClient.delete(`${API_URL}/habits/${habitId}`);
 }
+
+export const freezeHabitApi = async (habitId: string) => {
+    return apiClient.post(`${API_URL}/habits/${habitId}/freeze-today`);
+}

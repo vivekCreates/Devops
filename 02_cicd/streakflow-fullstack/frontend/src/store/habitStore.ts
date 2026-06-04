@@ -46,6 +46,7 @@ interface HabitState {
     getHabits: () => Promise<void>;
     updateHabit: (habitId: string, payload: updateHabitPayload) => Promise<void>;
     deleteHabit: (habitId: string) => Promise<void>;
+    freezeHabit: (habitId: string) => Promise<void>;
 }
 
 
@@ -166,6 +167,21 @@ export const useHabitStore = create<HabitState>((set,get) => ({
         } catch (error:any) {
             set({isLoading:false,habits:previousHabits})
             set({ error: error.message || "Failed to update habit" });
+        }
+    },
+    freezeHabit: async (habitId) => {
+        set({isLoading:true,error:null})
+        try {
+            const { freezeHabitApi } = await import("../api/habit");
+            const {data} = await freezeHabitApi(habitId)
+            if(!data.success){
+                throw new Error(data.message || "Failed to freeze habit")
+            }
+            set({isLoading:false})
+        } catch (error:any) {
+            set({isLoading:false})
+            set({ error: error.message || "Failed to freeze habit" });
+            throw error;
         }
     },
 }));

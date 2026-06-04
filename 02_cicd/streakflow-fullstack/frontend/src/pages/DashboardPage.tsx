@@ -22,7 +22,7 @@ const DashboardPage = () => {
 
   const { user, today, stats } = dashboardData;
 
-  const todayDateStr = new Date().toISOString().split('T')[0];
+  const todayDateStr = today.localDate;
 
   const maxBar = Math.max(
     ...stats.weeklyProgress.map((d) => d.completedHabits),

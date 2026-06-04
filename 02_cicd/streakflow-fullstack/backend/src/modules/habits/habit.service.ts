@@ -298,3 +298,80 @@ export const completeHabitForToday = async (userId: string, habitId: string) => 
 
   return result;
 };
+
+export const freezeHabitForToday = async (userId: string, habitId: string) => {
+  await ensureMonthlyFreezeCredits(userId);
+
+  return await prisma.$transaction(async (tx) => {
+    const habit = await getOwnedHabitOrThrow(tx, userId, habitId);
+    const today = getNowInTimeZone(habit.user.timezone);
+
+    if (habit.user.streakFreezeCredits <= 0) {
+      throw new AppError("No streak freeze credits left", 400);
+    }
+
+    const existingCompletion = await tx.habitCompletion.findUnique({
+      where: {
+        habitId_localDate: {
+          habitId,
+          localDate: today.localDate,
+        },
+      },
+    });
+
+    if (existingCompletion) {
+      throw new AppError("Habit already completed today", 400);
+    }
+
+    const existingFreeze = await tx.streakFreezeUsage.findFirst({
+      where: {
+        habitId,
+        missedLocalDate: today.localDate,
+      },
+    });
+
+    if (existingFreeze) {
+      throw new AppError("Streak freeze already used for today", 400);
+    }
+
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        streakFreezeCredits: {
+          decrement: 1,
+        },
+      },
+    });
+
+    await tx.streakFreezeUsage.create({
+      data: {
+        userId,
+        habitId,
+        missedLocalDate: today.localDate,
+      },
+    });
+
+    const existingProgress = habit.progress;
+    const currentStreak = existingProgress?.currentStreak ?? 0;
+    const bestStreak = existingProgress?.bestStreak ?? 0;
+
+    await tx.habitProgress.upsert({
+      where: { habitId },
+      create: {
+        habitId,
+        currentStreak,
+        bestStreak,
+        lastCompletedDate: today.localDate,
+      },
+      update: {
+        lastCompletedDate: today.localDate,
+      },
+    });
+
+    return {
+      success: true,
+      remainingFreezes: habit.user.streakFreezeCredits - 1,
+      localDate: today.localDate,
+    };
+  });
+};

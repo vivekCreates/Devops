@@ -7,6 +7,7 @@ import {
   createHabitHandler,
   listHabitsHandler,
   updateHabitHandler,
+  freezeHabitTodayHandler,
 } from "./habit.controller.js";
 import {
   archiveHabitSchema,
@@ -26,4 +27,9 @@ habitRouter.post(
   "/:habitId/complete-today",
   validateRequest(completeHabitSchema),
   completeHabitTodayHandler,
+);
+habitRouter.post(
+  "/:habitId/freeze-today",
+  validateRequest(completeHabitSchema),
+  freezeHabitTodayHandler,
 );

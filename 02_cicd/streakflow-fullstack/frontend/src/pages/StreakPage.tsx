@@ -2,29 +2,37 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Flame, Trophy, Snowflake, Check, Calendar, Clock } from 'lucide-react'
 import { useStatStore } from '../store/statStore'
+import { useHabitStore } from '../store/habitStore'
 
 
 const StreakPage = () => {
 
   const {dashboardData,getDashboardStats} = useStatStore();
+  const {freezeHabit, isLoading} = useHabitStore();
 
   // Get the first habit's data for display
   const habit = dashboardData?.habits?.[0]
 
-useEffect(()=>{
-  getDashboardStats()
-},[])
-  const [markedToday, setMarkedToday] = useState(false)
-  const [freezesLeft, setFreezesLeft] = useState(2)
+  useEffect(()=>{
+    getDashboardStats()
+  },[])
 
+  const [markedToday, setMarkedToday] = useState(false)
+  
+  const freezesLeft = dashboardData?.streakFreeze?.monthlyCredits ?? 0;
 
   const handleMarkComplete = () => {
     setMarkedToday(true)
   }
 
-  const handleUseFreeze = () => {
-    if (freezesLeft > 0) {
-      setFreezesLeft((prev) => prev - 1)
+  const handleUseFreeze = async () => {
+    if (freezesLeft > 0 && habit) {
+      try {
+        await freezeHabit(habit.id);
+        await getDashboardStats();
+      } catch (error) {
+        console.error(error);
+      }
     }
   }
 
@@ -194,14 +202,14 @@ useEffect(()=>{
         </div>
         <button
           className={`px-4 py-2 rounded-xl text-[0.82rem] sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
-            freezesLeft > 0
+            freezesLeft > 0 && !isLoading
               ? 'text-sf-teal bg-[#e6f9f4] hover:bg-[#d4f3ec] active:scale-95'
               : 'text-gray-300 bg-gray-100 cursor-not-allowed'
           }`}
           onClick={handleUseFreeze}
-          disabled={freezesLeft === 0}
+          disabled={freezesLeft === 0 || isLoading}
         >
-          Use
+          {isLoading ? 'Using...' : 'Use'}
         </button>
       </motion.div>
 

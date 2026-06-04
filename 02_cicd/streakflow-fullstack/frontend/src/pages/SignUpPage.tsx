@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { User, Mail, Lock, Eye, EyeOff, Rocket } from 'lucide-react'
+import { User, Mail, Lock, Eye, EyeOff, Rocket, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Logo from '../components/Logo'
 import { useAuthStore } from '../store/authStore'
-import Loader from '../components/Loader'
 import { useNavigator } from '../hooks/useNavigator'
 
 const SignUpPage = () => {
@@ -229,7 +228,7 @@ const SignUpPage = () => {
         >
           <Rocket size={18} />
           {
-            isLoading ? <Loader/> :
+            isLoading ? <><Loader2 className="animate-spin" size={18} /><span>Creating...</span></> :
             <span>Create Account</span>
           }
         </motion.button>
