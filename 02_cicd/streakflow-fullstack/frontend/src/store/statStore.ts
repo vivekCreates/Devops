@@ -73,6 +73,7 @@ export const useStatStore = create<StatState>((set) => ({
     error: null,
 
     getDashboardStats: async () => {
+        if (!localStorage.getItem("accessToken")) return;
         set({ isLoading: true, error: null });
         try{
             const {data} = await getDashboardStatsApi();

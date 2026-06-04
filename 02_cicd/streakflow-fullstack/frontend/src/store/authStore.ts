@@ -131,10 +131,18 @@ getCurrentUser: async () => {
   try {
     set({ isLoading: true });
 
-    const { data } = await getCurrentUserApi();
+    const latestToken = localStorage.getItem("accessToken") || "";
+    if (!latestToken) {
+      set({
+        user: null,
+        isAuthenticated: false,
+        accessToken: "",
+        isLoading: false,
+      });
+      return;
+    }
 
-    const latestToken =
-      localStorage.getItem("accessToken") || "";
+    const { data } = await getCurrentUserApi();
 
     set({
       user: data.data,
