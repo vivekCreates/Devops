@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Flame, Trophy, Snowflake, Check, Calendar, Clock } from 'lucide-react'
 import { useStatStore } from '../store/statStore'
 import { useHabitStore } from '../store/habitStore'
+import Loader from '../components/Loader'
 
 
 const StreakPage = () => {
@@ -44,6 +45,14 @@ const StreakPage = () => {
         console.error(error);
       }
     }
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="min-h-[100dvh] flex flex-col bg-gradient-to-b from-[#e8faf6] to-white">
+        <Loader variant="inline" message="Loading streak" />
+      </div>
+    );
   }
 
   return (

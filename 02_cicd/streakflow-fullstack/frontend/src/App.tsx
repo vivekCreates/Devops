@@ -9,7 +9,6 @@ import PublicRoute from './routes/PublicRoutes'
 import ProtectedRoute from './routes/ProtectedRoutes'
 import { useAuthStore } from './store/authStore'
 import { useEffect, useState } from 'react'
-import { useHabitStore } from './store/habitStore'
 import { AnimatePresence } from 'framer-motion'
 import Loader from './components/Loader'
 
@@ -22,8 +21,7 @@ function App() {
   useEffect(() => {
     hydrateAuth();
     getCurrentUser().finally(() => {
-      // Small delay so the loader animation plays smoothly
-      setTimeout(() => setAppReady(true), 800)
+      setAppReady(true);
     });
   }, [getCurrentUser]);
 

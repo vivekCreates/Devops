@@ -12,7 +12,7 @@ const DashboardPage = () => {
     getDashboardStats()
   }, []);
 
-  if (isLoading || !dashboardData) {
+  if (!dashboardData) {
     return (
       <div className="min-h-[100dvh] flex flex-col bg-gradient-to-b from-[#e8faf6] to-white">
         <Loader variant="inline" message="Loading dashboard" />
