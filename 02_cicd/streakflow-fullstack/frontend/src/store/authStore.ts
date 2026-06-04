@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import toast from "react-hot-toast";
 import {
   getCurrentUserApi,
   logoutApi,
@@ -41,7 +42,7 @@ interface AuthState {
   hydrateAuth: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
@@ -65,10 +66,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isLoading: false,
       });
 
+      toast.success("Login successful!");
       return true;
     } catch (error: any) {
+      const errorMsg = error.response?.data?.message || "Login failed";
+      toast.error(errorMsg);
       set({
-        error: error.response?.data?.message || "Login failed",
+        error: errorMsg,
         isLoading: false,
       });
       return false;
@@ -92,22 +96,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isLoading: false,
       });
 
+      toast.success("Registration successful!");
       return true;
     } catch (error: any) {
+      const errorMsg = error.response?.data?.message || "Registration failed";
+      toast.error(errorMsg);
       set({
-        error: error.response?.data?.message || "Registration failed",
+        error: errorMsg,
         isLoading: false,
       });
       return false;
     }
   },
 
-  /* ================= LOGOUT ================= */
   logout: async () => {
     try {
       await logoutApi();
-    } catch (error) {
-      console.error("Logout API error:", error);
+      toast.success("Logged out successfully");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Logout failed");
     } finally {
       localStorage.removeItem("accessToken");
 

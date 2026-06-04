@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { Flame, Trophy, Snowflake, Check, Calendar, Clock } from 'lucide-react'
 import { useStatStore } from '../store/statStore'
@@ -21,8 +21,12 @@ const StreakPage = () => {
   const [markedToday, setMarkedToday] = useState(false)
   
   const freezesLeft = dashboardData?.streakFreeze?.monthlyCredits ?? 0;
+  
+  const heatmap = dashboardData?.stats?.activityHeatmap;
+  const todayStatus = heatmap?.[heatmap?.length - 1]?.status;
+  const isActionTakenToday = todayStatus === 'completed' || todayStatus === 'frozen' || markedToday;
 
-  const handleMarkComplete = async () => {
+  const handleMarkComplete = useCallback(async () => {
     if (habit) {
       try {
         await completeHabit(habit.id);
@@ -34,9 +38,9 @@ const StreakPage = () => {
     } else {
       setMarkedToday(true);
     }
-  }
+  }, [habit, completeHabit, getDashboardStats]);
 
-  const handleUseFreeze = async () => {
+  const handleUseFreeze = useCallback(async () => {
     if (freezesLeft > 0 && habit) {
       try {
         await freezeHabit(habit.id);
@@ -45,7 +49,54 @@ const StreakPage = () => {
         console.error(error);
       }
     }
-  }
+  }, [freezesLeft, habit, freezeHabit, getDashboardStats]);
+
+  const renderedHeatmap = useMemo(() => {
+    const heatmapData = dashboardData?.stats?.activityHeatmap;
+    if (!heatmapData || heatmapData.length === 0) return null;
+
+    // Calculate blanks to align with weekday
+    const firstDate = new Date(heatmapData[0].date + 'T00:00:00');
+    const startDay = (firstDate.getDay() + 6) % 7; // Monday = 0
+    
+    const blanks = Array.from({ length: startDay }).map((_, i) => (
+      <div key={`blank-${i}`} className="w-[32px] h-[32px] sm:w-[34px] sm:h-[34px]" />
+    ));
+
+    const days = heatmapData.map((day, i) => {
+      const isToday = i === heatmapData.length - 1
+      let bg = ''
+      let border = ''
+      if (markedToday && isToday) {
+        bg = 'bg-sf-teal'
+      } else if (day.status === 'completed') {
+        bg = 'bg-sf-teal'
+      } else if (day.status === 'frozen') {
+        bg = 'bg-blue-400'
+      } else if (day.status === 'missed') {
+        bg = 'bg-sf-coral/40'
+      } else {
+        bg = 'bg-[#e0f5f0]'
+        border = 'border-[1.5px] border-dashed border-sf-teal/40'
+      }
+
+      return (
+        <motion.div
+          key={`day-${i}`}
+          className={`flex items-center justify-center w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-md sm:rounded-lg ${bg} ${border} transition-all duration-200`}
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.25, delay: 0.35 + i * 0.012 }}
+        >
+          <span className={`text-[10px] font-medium ${bg === 'bg-sf-teal' || bg === 'bg-blue-400' ? 'text-white/95' : 'text-gray-600'}`}>
+            {new Date(day.date + 'T00:00:00').getDate()}
+          </span>
+        </motion.div>
+      )
+    });
+
+    return [...blanks, ...days];
+  }, [dashboardData?.stats?.activityHeatmap, markedToday]);
 
   if (!dashboardData) {
     return (
@@ -157,58 +208,21 @@ const StreakPage = () => {
           </div>
 
           <div className="grid grid-cols-7 gap-[5px] sm:gap-[6px] justify-items-center max-w-[280px] mx-auto">
-            {(() => {
-              const heatmap = dashboardData?.stats?.activityHeatmap;
-              if (!heatmap || heatmap.length === 0) return null;
-
-              // Calculate blanks to align with weekday
-              const firstDate = new Date(heatmap[0].date + 'T00:00:00');
-              const startDay = (firstDate.getDay() + 6) % 7; // Monday = 0
-              
-              const blanks = Array.from({ length: startDay }).map((_, i) => (
-                <div key={`blank-${i}`} className="w-[32px] h-[32px] sm:w-[34px] sm:h-[34px]" />
-              ));
-
-              const days = heatmap.map((day, i) => {
-                const isToday = i === heatmap.length - 1
-                let bg = ''
-                let border = ''
-                if (markedToday && isToday) {
-                  bg = 'bg-sf-teal'
-                } else if (day.status === 'completed') {
-                  bg = 'bg-sf-teal'
-                } else if (day.status === 'missed') {
-                  bg = 'bg-sf-coral/40'
-                } else {
-                  bg = 'bg-[#e0f5f0]'
-                  border = 'border-[1.5px] border-dashed border-sf-teal/40'
-                }
-
-                return (
-                  <motion.div
-                    key={`day-${i}`}
-                    className={`flex items-center justify-center w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-md sm:rounded-lg ${bg} ${border} transition-all duration-200`}
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.25, delay: 0.35 + i * 0.012 }}
-                  >
-                    <span className={`text-[10px] font-medium ${bg === 'bg-sf-teal' ? 'text-white/95' : 'text-gray-600'}`}>
-                      {new Date(day.date + 'T00:00:00').getDate()}
-                    </span>
-                  </motion.div>
-                )
-              });
-
-              return [...blanks, ...days];
-            })()}
+            {renderedHeatmap}
           </div>
 
           {/* Legend */}
-          <div className="flex items-center justify-center gap-4 sm:gap-5 mt-4">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 mt-4">
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded bg-sf-teal" />
               <span className="text-[0.7rem] text-text-dark-secondary font-medium">
                 Completed
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-blue-400" />
+              <span className="text-[0.7rem] text-text-dark-secondary font-medium">
+                Frozen
               </span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -247,14 +261,20 @@ const StreakPage = () => {
         </div>
         <button
           className={`px-4 py-2 rounded-xl text-[0.82rem] sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
-            freezesLeft > 0 && !isLoading
+            freezesLeft > 0 && !isLoading && !isActionTakenToday
               ? 'text-sf-teal bg-[#e6f9f4] hover:bg-[#d4f3ec] active:scale-95'
-              : 'text-gray-300 bg-gray-100 cursor-not-allowed'
+              : 'text-gray-400 bg-gray-100 cursor-not-allowed'
           }`}
           onClick={handleUseFreeze}
-          disabled={freezesLeft === 0 || isLoading}
+          disabled={freezesLeft === 0 || isLoading || isActionTakenToday}
         >
-          {isLoading ? 'Using...' : 'Use'}
+          {isLoading 
+            ? 'Wait...' 
+            : todayStatus === 'frozen' 
+              ? 'Used' 
+              : todayStatus === 'completed' || markedToday 
+                ? 'Done' 
+                : 'Use'}
         </button>
       </motion.div>
 
@@ -270,17 +290,17 @@ const StreakPage = () => {
       >
         <motion.button
           className={`w-full h-[52px] sm:h-14 rounded-2xl text-[0.95rem] sm:text-base font-bold flex items-center justify-center gap-2.5 cursor-pointer transition-all duration-300 ${
-            markedToday
-              ? 'bg-sf-teal text-white shadow-[0_4px_20px_rgba(44,181,160,0.35)]'
+            isActionTakenToday
+              ? 'bg-sf-teal text-white shadow-[0_4px_20px_rgba(44,181,160,0.35)] cursor-not-allowed'
               : 'bg-surface-dark text-white hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.3)] active:translate-y-0'
           }`}
           onClick={handleMarkComplete}
-          whileTap={{ scale: 0.97 }}
+          whileTap={{ scale: isActionTakenToday ? 1 : 0.97 }}
           id="mark-complete-btn"
-          disabled={markedToday}
+          disabled={isActionTakenToday}
         >
           <Check size={20} strokeWidth={2.5} />
-          {markedToday ? 'Completed Today! 🎉' : 'Mark Today Complete'}
+          {isActionTakenToday ? 'Completed Today! 🎉' : 'Mark Today Complete'}
         </motion.button>
       </motion.div>
     </div>

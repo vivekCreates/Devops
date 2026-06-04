@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Flame, TrendingUp } from "lucide-react";
 import { useStatStore } from "../store/statStore";
@@ -6,11 +6,47 @@ import Loader from "../components/Loader";
 
 
 const DashboardPage = () => {
-  const {getDashboardStats,dashboardData,isLoading} = useStatStore();
+  const {getDashboardStats,dashboardData} = useStatStore();
 
   useEffect(() => {
     getDashboardStats()
   }, []);
+
+  const maxBar = useMemo(() => {
+    if (!dashboardData) return 1;
+    return Math.max(
+      ...dashboardData.stats.weeklyProgress.map((d) => d.completedHabits),
+      1
+    );
+  }, [dashboardData]);
+
+  const renderedChart = useMemo(() => {
+    if (!dashboardData) return null;
+    return dashboardData.stats.weeklyProgress.map((day, i) => {
+      const height = (day.completedHabits / maxBar) * 100;
+      const isToday = day.date === dashboardData.today.localDate;
+
+      return (
+        <div key={day.date} className="flex-1 flex flex-col items-center justify-end h-full">
+          <motion.div
+            className={`w-full rounded-lg ${
+              isToday ? "bg-sf-teal" : "bg-sf-teal/20"
+            }`}
+            style={{ minHeight: "6px" }}
+            initial={{ height: 0 }}
+            animate={{ height: `${height}%` }}
+            transition={{ duration: 0.6, delay: i * 0.05 }}
+          />
+
+          <span className="text-[10px] mt-1 text-gray-500">
+            {new Date(day.date + 'T00:00:00').toLocaleDateString("en-US", {
+              weekday: "short",
+            })}
+          </span>
+        </div>
+      );
+    });
+  }, [dashboardData, maxBar]);
 
   if (!dashboardData) {
     return (
@@ -21,13 +57,6 @@ const DashboardPage = () => {
   }
 
   const { user, today, stats } = dashboardData;
-
-  const todayDateStr = today.localDate;
-
-  const maxBar = Math.max(
-    ...stats.weeklyProgress.map((d) => d.completedHabits),
-    1
-  );
 
   return (
     <div className="min-h-[100dvh] flex flex-col pb-10 bg-gradient-to-b from-[#e8faf6] to-white">
@@ -68,30 +97,7 @@ const DashboardPage = () => {
         <h3 className="font-semibold mb-4">Weekly Progress</h3>
 
         <div className="flex items-end gap-2 h-[140px]">
-          {stats.weeklyProgress.map((day, i) => {
-            const height = (day.completedHabits / maxBar) * 100;
-            const isToday = day.date === todayDateStr;
-
-            return (
-              <div key={day.date} className="flex-1 flex flex-col items-center justify-end h-full">
-                <motion.div
-                  className={`w-full rounded-lg ${
-                    isToday ? "bg-sf-teal" : "bg-sf-teal/20"
-                  }`}
-                  style={{ minHeight: "6px" }}
-                  initial={{ height: 0 }}
-                  animate={{ height: `${height}%` }}
-                  transition={{ duration: 0.6, delay: i * 0.05 }}
-                />
-
-                <span className="text-[10px] mt-1 text-gray-500">
-                  {new Date(day.date + 'T00:00:00').toLocaleDateString("en-US", {
-                    weekday: "short",
-                  })}
-                </span>
-              </div>
-            );
-          })}
+          {renderedChart}
         </div>
       </div>
 

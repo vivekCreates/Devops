@@ -55,7 +55,7 @@ const HomePage = () => {
       name: newHabitName.trim(),
       icon: newHabitIcon,
       reminderEnabled: newHabitScheduleEnabled,
-      reminderTime: newHabitScheduleEnabled ? newHabitScheduleTime : null,
+      reminderTime: newHabitScheduleEnabled ? newHabitScheduleTime : undefined,
     }
     createHabit(newHabit)
     setNewHabitName('')
@@ -82,7 +82,7 @@ const HomePage = () => {
       name: editHabitName.trim(),
       icon: editHabitIcon,
       reminderEnabled: editHabitScheduleEnabled,
-      reminderTime: editHabitScheduleEnabled ? editHabitScheduleTime : null,
+      reminderTime: editHabitScheduleEnabled ? editHabitScheduleTime : undefined,
     })
     setShowEditModal(false)
     setEditingHabit(null)
@@ -97,8 +97,8 @@ const HomePage = () => {
   // Confirm delete
   const handleDeleteHabit = async () => {
     if (!deletingHabit) return
-    await deleteHabit(deletingHabit.id)
     setShowDeleteModal(false)
+    await deleteHabit(deletingHabit.id)
     setDeletingHabit(null)
   }
 
@@ -127,7 +127,7 @@ const HomePage = () => {
           </p>
         </div>
         <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-sf-teal-light to-sf-teal flex items-center justify-center text-white text-lg font-bold shadow-md shrink-0">
-          {user?.fullName.charAt(0).toUpperCase()}
+          {user?.fullName?.charAt(0)?.toUpperCase() || 'U'}
         </div>
       </motion.header>
 

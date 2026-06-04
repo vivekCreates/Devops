@@ -115,19 +115,28 @@ export const getActivityHeatmap = async (userId: string) => {
   groupedCompletions.forEach((entry) => {
     countByDate.set(entry.localDate, entry._count._all);
   });
+  
+  const freezeByDate = new Map<string, number>();
   groupedFreezes.forEach((entry) => {
-    const existing = countByDate.get(entry.missedLocalDate) ?? 0;
-    countByDate.set(entry.missedLocalDate, existing + entry._count._all);
+    freezeByDate.set(entry.missedLocalDate, entry._count._all);
   });
 
   const activity = Array.from({ length: 31 }, (_, offset) => {
     const date = addDaysToLocalDate(startDate, offset);
     const completions = countByDate.get(date) ?? 0;
+    const freezes = freezeByDate.get(date) ?? 0;
+
+    let status = "missed";
+    if (completions > 0) {
+      status = "completed";
+    } else if (freezes > 0) {
+      status = "frozen";
+    }
 
     return {
       date,
-      completions,
-      status: completions > 0 ? "completed" : "missed",
+      completions: completions + freezes,
+      status,
     };
   });
 

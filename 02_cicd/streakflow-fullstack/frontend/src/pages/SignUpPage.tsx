@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { User, Mail, Lock, Eye, EyeOff, Rocket, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'

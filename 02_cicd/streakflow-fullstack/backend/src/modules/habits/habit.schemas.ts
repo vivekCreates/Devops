@@ -3,6 +3,7 @@ import { z } from "zod";
 const reminderTimeSchema = z
   .string()
   .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Reminder time must be HH:mm")
+  .nullable()
   .optional();
 
 const createBodySchema = z

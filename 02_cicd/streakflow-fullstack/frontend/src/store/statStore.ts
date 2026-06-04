@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { Habit } from "./habitStore";
 import { getDashboardStatsApi } from "../api/stats";
-
+import toast from "react-hot-toast";
 
 
 export interface DashboardUser {
@@ -28,7 +28,7 @@ export interface DashboardWeeklyProgress {
 export interface DashboardActivityHeatmap {
   date: string;
   completions: number;
-  status: "completed" | "missed" | "partial";
+  status: "completed" | "missed" | "partial" | "frozen";
 }
 
 
@@ -82,7 +82,9 @@ export const useStatStore = create<StatState>((set) => ({
             }
             set({ dashboardData: data.data, isLoading: false });
         }catch(error:any) {
-            set({ error: error.message || "Failed to fetch dashboard stats" });
+            const errorMsg = error.response?.data?.message || error.message || "Failed to fetch dashboard stats";
+            set({ error: errorMsg, isLoading: false });
+            toast.error(errorMsg);
         }
     },
 

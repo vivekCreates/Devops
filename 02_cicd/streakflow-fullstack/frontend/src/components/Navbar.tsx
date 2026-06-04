@@ -11,7 +11,7 @@ import {
   ChevronDown,
   User,
 } from 'lucide-react'
-import Logo from './Logo'
+
 import { useAuthStore } from '../store/authStore'
 import { ROUTES } from '../constant'
 

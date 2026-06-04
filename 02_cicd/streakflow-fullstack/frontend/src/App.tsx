@@ -11,24 +11,60 @@ import { useAuthStore } from './store/authStore'
 import { useEffect, useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import Loader from './components/Loader'
+import { Toaster } from 'react-hot-toast'
 
+
+import { useHabitStore } from './store/habitStore'
+import { useStatStore } from './store/statStore'
 
 function App() {
   const {getCurrentUser,hydrateAuth} = useAuthStore();
   const [appReady, setAppReady] = useState(false)
 
-
   useEffect(() => {
     hydrateAuth();
-    getCurrentUser().finally(() => {
+    if (localStorage.getItem("accessToken")) {
       setAppReady(true);
-    });
+      getCurrentUser();
+      useHabitStore.getState().getHabits();
+      useStatStore.getState().getDashboardStats();
+    } else {
+      getCurrentUser().finally(() => {
+        setAppReady(true);
+      });
+    }
   }, [getCurrentUser]);
 
 
 
   return (
     <>
+      <Toaster 
+        position="top-center" 
+        toastOptions={{
+          style: {
+            background: 'white',
+            color: 'black',
+            borderRadius: '12px',
+            fontSize: '0.92rem',
+            fontWeight: 500,
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
+          },
+          success: {
+            iconTheme: {
+              primary: '#2cb5a0',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#d4736e',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
       {/* Fullscreen splash loader during initial hydration */}
       <AnimatePresence>
         {!appReady && <Loader message="Getting things ready" />}

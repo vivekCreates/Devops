@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { completeHabitApi, createHabitApi, deleteHabitApi, getHabitsApi, updateHabitApi } from "../api/habit";
+import toast from "react-hot-toast";
 
 type HabitStatus = "ACTIVE" | "INACTIVE" | "COMPLETED";
 
@@ -86,8 +87,10 @@ export const useHabitStore = create<HabitState>((set,get) => ({
             }));
 
         } catch (error:any) {
-            set({ habits: previousHabits, isLoading: false, error: error.response?.data?.message || error.message || "Failed to create habit" });
-            set({ isLoading: false, error: error.message || "Failed to create habit" });
+            const errorMsg = error.response?.data?.message || error.message || "Failed to create habit";
+            set({ habits: previousHabits, isLoading: false, error: errorMsg });
+            toast.error(errorMsg);
+            throw error;
         }
     },
 
@@ -104,12 +107,16 @@ export const useHabitStore = create<HabitState>((set,get) => ({
             if(!data.success) {
                 throw new Error(data.message || "Failed to complete habit");
             }
+            set({ isLoading: false });
 
         } catch (error:any) {
+            const errorMsg = error.response?.data?.message || error.message || "Failed to complete habit";
             set((state)=>({
                 habits:state.habits.map((habit)=>habit.id === habitId ? {...habit,completedToday:false}:habit)
             }))
-            set({ error: error.message || "Failed to complete habit" });
+            set({ isLoading: false, error: errorMsg });
+            toast.error(errorMsg);
+            throw error;
         }
     },
 
@@ -119,7 +126,9 @@ export const useHabitStore = create<HabitState>((set,get) => ({
             const {data} = await getHabitsApi();
             set({ habits: data.data.habits, isLoading: false });
         }catch(error:any) {
-            set({ error: error.message || "Failed to fetch habits" });
+            const errorMsg = error.response?.data?.message || error.message || "Failed to fetch habits";
+            set({ error: errorMsg });
+            toast.error(errorMsg);
         }
     },
 
@@ -142,12 +151,15 @@ export const useHabitStore = create<HabitState>((set,get) => ({
                 throw new Error(data.message || "Failed to update habit");
             }
         set((state)=>({
-            habits:state.habits.map((habit)=>habit.id === habitId ? data.data : habit)
+            habits:state.habits.map((habit)=>habit.id === habitId ? data.data : habit),
+            isLoading: false
         })) 
 
        }catch(error:any) {
-        set({ habits: previousHabits,isLoading: false });
-        set({ error: error.message || "Failed to update habit" });
+            const errorMsg = error.response?.data?.message || error.message || "Failed to update habit";
+            set({ habits:previousHabits, isLoading: false, error: errorMsg });
+            toast.error(errorMsg);
+            throw error;
        }
     },
     deleteHabit: async (habitId) => {
@@ -166,7 +178,10 @@ export const useHabitStore = create<HabitState>((set,get) => ({
 
         } catch (error:any) {
             set({isLoading:false,habits:previousHabits})
-            set({ error: error.message || "Failed to update habit" });
+            const errorMsg = error.response?.data?.message || error.message || "Failed to delete habit";
+            set({ error: errorMsg });
+            toast.error(errorMsg);
+            throw error;
         }
     },
     freezeHabit: async (habitId) => {
@@ -178,9 +193,10 @@ export const useHabitStore = create<HabitState>((set,get) => ({
                 throw new Error(data.message || "Failed to freeze habit")
             }
             set({isLoading:false})
-        } catch (error:any) {
-            set({isLoading:false})
-            set({ error: error.message || "Failed to freeze habit" });
+        } catch (error: any) {
+            const errorMsg = error.response?.data?.message || error.message || "Failed to freeze habit";
+            set({ isLoading: false, error: errorMsg });
+            toast.error(errorMsg);
             throw error;
         }
     },
