@@ -28,7 +28,7 @@ export interface DashboardWeeklyProgress {
 export interface DashboardActivityHeatmap {
   date: string;
   completions: number;
-  status: "done" | "missed" | "partial";
+  status: "completed" | "missed" | "partial";
 }
 
 

@@ -120,49 +120,41 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  /* ================= GET CURRENT USER ================= */
-  getCurrentUser: async () => {
-    const token = localStorage.getItem("accessToken");
+getCurrentUser: async () => {
+  try {
+    set({ isLoading: true });
 
-    if (!token) {
-      set({
-        user: null,
-        isAuthenticated: false,
-        accessToken: "",
-      });
-      return;
-    }
+    const { data } = await getCurrentUserApi();
 
-    set({ accessToken: token, isAuthenticated: true });
+    const latestToken =
+      localStorage.getItem("accessToken") || "";
 
-    try {
-      const { data } = await getCurrentUserApi();
+    set({
+      user: data.data,
+      isAuthenticated: true,
+      accessToken: latestToken,
+      isLoading: false,
+    });
+  } catch (error) {
+    localStorage.removeItem("accessToken");
 
-      // Update with the latest token in case it was refreshed
-      const latestToken = localStorage.getItem("accessToken") || "";
+    set({
+      user: null,
+      isAuthenticated: false,
+      accessToken: "",
+      isLoading: false,
+    });
+  }
+  },
 
-      set({
-        user: data.data,
-        isAuthenticated: true,
-        accessToken: latestToken,
-      });
-    } catch (error) {
-  set({
-    user: null,
-    isAuthenticated: false,
-  });
+hydrateAuth: () => {
+  const token = localStorage.getItem("accessToken");
+
+  if (token) {
+    set({
+      accessToken: token,
+      isAuthenticated: true,
+    });
+  }
 }
-  },
-
-  /* ================= HYDRATE (on refresh) ================= */
-  hydrateAuth: () => {
-    const token = localStorage.getItem("accessToken");
-
-    if (token) {
-      set({
-        accessToken: token,
-        isAuthenticated: true,
-      });
-    }
-  },
 }));

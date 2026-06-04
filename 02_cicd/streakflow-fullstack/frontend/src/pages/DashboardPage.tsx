@@ -56,7 +56,7 @@ const DashboardPage = () => {
             </h2>
           </div>
 
-          <div className="flex items-center gap-2 text-green-500 font-semibold">
+          <div className="flex items-center gap-2 text-sf-teal font-semibold">
             <TrendingUp size={18} />
             {today.completionRate}%
           </div>
@@ -73,10 +73,10 @@ const DashboardPage = () => {
             const isToday = day.date === todayDateStr;
 
             return (
-              <div key={day.date} className="flex-1 flex flex-col items-center">
+              <div key={day.date} className="flex-1 flex flex-col items-center justify-end h-full">
                 <motion.div
                   className={`w-full rounded-lg ${
-                    isToday ? "bg-green-500" : "bg-green-200"
+                    isToday ? "bg-sf-teal" : "bg-sf-teal/20"
                   }`}
                   style={{ minHeight: "6px" }}
                   initial={{ height: 0 }}

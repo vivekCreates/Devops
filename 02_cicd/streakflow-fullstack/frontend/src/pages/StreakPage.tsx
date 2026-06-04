@@ -8,7 +8,7 @@ import { useHabitStore } from '../store/habitStore'
 const StreakPage = () => {
 
   const {dashboardData,getDashboardStats} = useStatStore();
-  const {freezeHabit, isLoading} = useHabitStore();
+  const {freezeHabit, completeHabit, isLoading} = useHabitStore();
 
   // Get the first habit's data for display
   const habit = dashboardData?.habits?.[0]
@@ -21,8 +21,18 @@ const StreakPage = () => {
   
   const freezesLeft = dashboardData?.streakFreeze?.monthlyCredits ?? 0;
 
-  const handleMarkComplete = () => {
-    setMarkedToday(true)
+  const handleMarkComplete = async () => {
+    if (habit) {
+      try {
+        await completeHabit(habit.id);
+        setMarkedToday(true);
+        await getDashboardStats();
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      setMarkedToday(true);
+    }
   }
 
   const handleUseFreeze = async () => {
@@ -130,32 +140,58 @@ const StreakPage = () => {
 
         {/* Grid */}
         <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-[0_2px_16px_rgba(0,0,0,0.06)]">
-          <div className="grid grid-cols-7 gap-[5px] sm:gap-[6px] justify-items-center max-w-[280px] mx-auto">
-            {dashboardData && dashboardData.stats.activityHeatmap?.map((day, i) => {
-              const isToday = i === dashboardData?.stats?.activityHeatmap?.length - 1
-              let bg = ''
-              let border = ''
-              if (markedToday && isToday) {
-                bg = 'bg-sf-teal'
-              } else if (day.status === 'done') {
-                bg = 'bg-sf-teal'
-              } else if (day.status === 'missed') {
-                bg = 'bg-red-200'
-              } else {
-                bg = 'bg-[#e0f5f0]'
-                border = 'border-[1.5px] border-dashed border-sf-teal/40'
-              }
+          {/* Day Headers */}
+          <div className="grid grid-cols-7 gap-[5px] sm:gap-[6px] justify-items-center max-w-[280px] mx-auto mb-2">
+            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
+              <span key={i} className="text-[10px] font-semibold text-gray-400">{d}</span>
+            ))}
+          </div>
 
-              return (
-                <motion.div
-                  key={i}
-                  className={`w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-md sm:rounded-lg ${bg} ${border} transition-all duration-200`}
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.25, delay: 0.35 + i * 0.012 }}
-                />
-              )
-            })}
+          <div className="grid grid-cols-7 gap-[5px] sm:gap-[6px] justify-items-center max-w-[280px] mx-auto">
+            {(() => {
+              const heatmap = dashboardData?.stats?.activityHeatmap;
+              if (!heatmap || heatmap.length === 0) return null;
+
+              // Calculate blanks to align with weekday
+              const firstDate = new Date(heatmap[0].date + 'T00:00:00');
+              const startDay = (firstDate.getDay() + 6) % 7; // Monday = 0
+              
+              const blanks = Array.from({ length: startDay }).map((_, i) => (
+                <div key={`blank-${i}`} className="w-[32px] h-[32px] sm:w-[34px] sm:h-[34px]" />
+              ));
+
+              const days = heatmap.map((day, i) => {
+                const isToday = i === heatmap.length - 1
+                let bg = ''
+                let border = ''
+                if (markedToday && isToday) {
+                  bg = 'bg-sf-teal'
+                } else if (day.status === 'completed') {
+                  bg = 'bg-sf-teal'
+                } else if (day.status === 'missed') {
+                  bg = 'bg-sf-coral/40'
+                } else {
+                  bg = 'bg-[#e0f5f0]'
+                  border = 'border-[1.5px] border-dashed border-sf-teal/40'
+                }
+
+                return (
+                  <motion.div
+                    key={`day-${i}`}
+                    className={`flex items-center justify-center w-[32px] h-[32px] sm:w-[34px] sm:h-[34px] rounded-md sm:rounded-lg ${bg} ${border} transition-all duration-200`}
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.25, delay: 0.35 + i * 0.012 }}
+                  >
+                    <span className={`text-[10px] font-medium ${bg === 'bg-sf-teal' ? 'text-white/95' : 'text-gray-600'}`}>
+                      {new Date(day.date + 'T00:00:00').getDate()}
+                    </span>
+                  </motion.div>
+                )
+              });
+
+              return [...blanks, ...days];
+            })()}
           </div>
 
           {/* Legend */}
@@ -167,7 +203,7 @@ const StreakPage = () => {
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded bg-red-200" />
+              <div className="w-3 h-3 rounded bg-sf-coral/40" />
               <span className="text-[0.7rem] text-text-dark-secondary font-medium">
                 Missed
               </span>

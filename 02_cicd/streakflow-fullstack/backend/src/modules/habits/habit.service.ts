@@ -104,6 +104,7 @@ export const listHabits = async (userId: string) => {
     where: { id: userId },
     select: {
       timezone: true,
+      streakFreezeCredits: true,
     },
   });
 
