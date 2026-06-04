@@ -76,8 +76,12 @@ apiClient.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      // Call refresh endpoint — the refreshToken is sent via httpOnly cookie
-      const { data } = await apiClient.post("/auth/refresh");
+      // Call refresh endpoint bypassing the interceptors to prevent loops
+      const { data } = await axios.post(
+        `${API_URL}/auth/refresh`,
+        {},
+        { withCredentials: true }
+      );
       const newAccessToken = data.data.tokens.accessToken;
 
       localStorage.setItem("accessToken", newAccessToken);

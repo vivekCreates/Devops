@@ -140,17 +140,15 @@ export const refreshSession = async (refreshToken: string) => {
     throw new AppError("Refresh token mismatch", 401);
   }
 
-  const nextSession = await prisma.$transaction(async (tx) => {
-    await tx.refreshToken.update({
-      where: { id: storedToken.id },
-      data: { revokedAt: new Date() },
-    });
-
-    const tokens = await issueTokenPair(tx, storedToken.user);
-    return { user: sanitizeUser(storedToken.user), tokens };
+  const accessToken = signAccessToken({
+    sub: storedToken.user.id,
+    email: storedToken.user.email,
   });
 
-  return nextSession;
+  return {
+    user: sanitizeUser(storedToken.user),
+    tokens: { accessToken, refreshToken },
+  };
 };
 
 export const logoutUser = async (refreshToken?: string) => {
