@@ -3,11 +3,11 @@ FROM node:22-slim
 WORKDIR /app
 
 COPY package*.json ./
-COPY prisma ./prisma
-
 RUN npm install
 
-COPY . .
+COPY prisma ./prisma
+COPY tsconfig*.json ./
+COPY src ./src
 
 RUN npm run build
 
