@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { type InternalAxiosRequestConfig } from "axios";
 
 export const API_URL =
   import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
@@ -11,60 +11,83 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
-// Flag to prevent multiple refresh attempts running simultaneously
+interface RetryAxiosRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean;
+}
+
 let isRefreshing = false;
+
 let failedQueue: {
   resolve: (token: string) => void;
-  reject: (err: any) => void;
+  reject: (error: unknown) => void;
 }[] = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (
+  error: unknown,
+  token: string | null = null
+) => {
   failedQueue.forEach(({ resolve, reject }) => {
     if (error) {
       reject(error);
-    } else {
-      resolve(token!);
+    } else if (token) {
+      resolve(token);
     }
   });
+
   failedQueue = [];
 };
 
-// ── Request interceptor: attach Bearer token if available ──
+/* =========================
+   REQUEST INTERCEPTOR
+========================= */
 apiClient.interceptors.request.use(
-  function (config) {
+  (config) => {
     const token = localStorage.getItem("accessToken");
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
-  function (error) {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// ── Response interceptor: auto-refresh on 401 ──
+/* =========================
+   RESPONSE INTERCEPTOR
+========================= */
 apiClient.interceptors.response.use(
   (response) => response,
+
   async (error) => {
-    const originalRequest = error.config;
+    const originalRequest = error.config as RetryAxiosRequestConfig;
 
-    // Only attempt refresh for 401 errors, and not for auth endpoints themselves
-    const isAuthEndpoint =
-      originalRequest.url?.includes("/auth/login") ||
-      originalRequest.url?.includes("/auth/register") ||
-      originalRequest.url?.includes("/auth/refresh");
-
-    if (error.response?.status !== 401 || isAuthEndpoint || originalRequest._retry) {
+    if (!originalRequest) {
       return Promise.reject(error);
     }
 
-    // If a refresh is already in progress, queue this request
+    const isRefreshRequest =
+      originalRequest.url?.includes("/auth/refresh");
+
+    if (
+      error.response?.status !== 401 ||
+      originalRequest._retry ||
+      isRefreshRequest
+    ) {
+      return Promise.reject(error);
+    }
+
+    // Wait if another refresh request is already running
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         failedQueue.push({
           resolve: (token: string) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
+            originalRequest.headers =
+              originalRequest.headers || {};
+
+            originalRequest.headers.Authorization =
+              `Bearer ${token}`;
+
             resolve(apiClient(originalRequest));
           },
           reject,
@@ -76,24 +99,34 @@ apiClient.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      // Call refresh endpoint bypassing the interceptors to prevent loops
       const { data } = await axios.post(
         `${API_URL}/auth/refresh`,
         {},
-        { withCredentials: true }
+        {
+          withCredentials: true,
+        }
       );
-      const newAccessToken = data.data.tokens.accessToken;
 
-      localStorage.setItem("accessToken", newAccessToken);
-      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+      const newAccessToken =
+        data.data.tokens.accessToken;
+
+      localStorage.setItem(
+        "accessToken",
+        newAccessToken
+      );
 
       processQueue(null, newAccessToken);
 
-      return apiClient(originalRequest);
-    } catch (refreshError) {
-      processQueue(refreshError, null);
+      originalRequest.headers =
+        originalRequest.headers || {};
 
-      // Refresh failed — clear auth state and redirect to sign-in
+      originalRequest.headers.Authorization =
+        `Bearer ${newAccessToken}`;
+
+      return apiClient(originalRequest);
+    } catch (refreshError: any) {
+      processQueue(refreshError);
+
       localStorage.removeItem("accessToken");
 
       return Promise.reject(refreshError);

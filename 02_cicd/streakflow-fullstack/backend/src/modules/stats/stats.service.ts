@@ -1,7 +1,7 @@
 import { HabitStatus } from "@prisma/client";
 import { AppError } from "../../errors/app-error.js";
 import { prisma } from "../../lib/prisma.js";
-import { addDaysToLocalDate, getTodayLocalDate } from "../../utils/date.js";
+import { addDaysToLocalDate, diffLocalDates, getTodayLocalDate } from "../../utils/date.js";
 import { ensureMonthlyFreezeCredits, getUserOrThrow } from "../users/user.service.js";
 
 const getSummaryNumbers = async (userId: string) => {
@@ -33,19 +33,39 @@ export const getWeeklyProgress = async (userId: string) => {
   const today = getTodayLocalDate(user.timezone);
   const startDate = addDaysToLocalDate(today, -6);
 
-  const grouped = await prisma.habitCompletion.groupBy({
-    by: ["localDate"],
-    where: {
-      userId,
-      localDate: {
-        gte: startDate,
-        lte: today,
+  const [groupedCompletions, groupedFreezes] = await Promise.all([
+    prisma.habitCompletion.groupBy({
+      by: ["localDate"],
+      where: {
+        userId,
+        localDate: {
+          gte: startDate,
+          lte: today,
+        },
       },
-    },
-    _count: { _all: true },
-  });
+      _count: { _all: true },
+    }),
+    prisma.streakFreezeUsage.groupBy({
+      by: ["missedLocalDate"],
+      where: {
+        userId,
+        missedLocalDate: {
+          gte: startDate,
+          lte: today,
+        },
+      },
+      _count: { _all: true },
+    }),
+  ]);
 
-  const countByDate = new Map(grouped.map((entry) => [entry.localDate, entry._count._all]));
+  const countByDate = new Map<string, number>();
+  groupedCompletions.forEach((entry) => {
+    countByDate.set(entry.localDate, entry._count._all);
+  });
+  groupedFreezes.forEach((entry) => {
+    const existing = countByDate.get(entry.missedLocalDate) ?? 0;
+    countByDate.set(entry.missedLocalDate, existing + entry._count._all);
+  });
   const series = Array.from({ length: 7 }, (_, offset) => {
     const date = addDaysToLocalDate(startDate, offset);
     return {
@@ -66,19 +86,40 @@ export const getActivityHeatmap = async (userId: string) => {
   const today = getTodayLocalDate(user.timezone);
   const startDate = addDaysToLocalDate(today, -30);
 
-  const grouped = await prisma.habitCompletion.groupBy({
-    by: ["localDate"],
-    where: {
-      userId,
-      localDate: {
-        gte: startDate,
-        lte: today,
+  const [groupedCompletions, groupedFreezes] = await Promise.all([
+    prisma.habitCompletion.groupBy({
+      by: ["localDate"],
+      where: {
+        userId,
+        localDate: {
+          gte: startDate,
+          lte: today,
+        },
       },
-    },
-    _count: { _all: true },
+      _count: { _all: true },
+    }),
+    prisma.streakFreezeUsage.groupBy({
+      by: ["missedLocalDate"],
+      where: {
+        userId,
+        missedLocalDate: {
+          gte: startDate,
+          lte: today,
+        },
+      },
+      _count: { _all: true },
+    }),
+  ]);
+
+  const countByDate = new Map<string, number>();
+  groupedCompletions.forEach((entry) => {
+    countByDate.set(entry.localDate, entry._count._all);
+  });
+  groupedFreezes.forEach((entry) => {
+    const existing = countByDate.get(entry.missedLocalDate) ?? 0;
+    countByDate.set(entry.missedLocalDate, existing + entry._count._all);
   });
 
-  const countByDate = new Map(grouped.map((entry) => [entry.localDate, entry._count._all]));
   const activity = Array.from({ length: 31 }, (_, offset) => {
     const date = addDaysToLocalDate(startDate, offset);
     const completions = countByDate.get(date) ?? 0;
@@ -167,16 +208,26 @@ export const getDashboard = async (userId: string) => {
       totalHabits: habits.length,
       completionRate,
     },
-    habits: habits.map((habit) => ({
-      id: habit.id,
-      name: habit.name,
-      icon: habit.icon,
-      completedToday: habit.completions.length > 0,
-      currentStreak: habit.progress?.currentStreak ?? 0,
-      bestStreak: habit.progress?.bestStreak ?? 0,
-      reminderEnabled: habit.reminderEnabled,
-      reminderTime: habit.reminderTime,
-    })),
+    habits: habits.map((habit) => {
+      let currentStreak = habit.progress?.currentStreak ?? 0;
+      if (habit.progress?.lastCompletedDate) {
+        const dayGap = diffLocalDates(habit.progress.lastCompletedDate, today);
+        if (dayGap > 2 || (dayGap === 2 && user.streakFreezeCredits <= 0)) {
+          currentStreak = 0;
+        }
+      }
+
+      return {
+        id: habit.id,
+        name: habit.name,
+        icon: habit.icon,
+        completedToday: habit.completions.length > 0,
+        currentStreak,
+        bestStreak: habit.progress?.bestStreak ?? 0,
+        reminderEnabled: habit.reminderEnabled,
+        reminderTime: habit.reminderTime,
+      };
+    }),
     streakFreeze: {
       monthlyCredits: user.streakFreezeCredits,
     },

@@ -146,18 +146,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: true,
         accessToken: latestToken,
       });
-    } catch (error: any) {
-      // If the token refresh also failed, localStorage will be cleared
-      // by the response interceptor — reset auth state accordingly
-      const stillHasToken = localStorage.getItem("accessToken");
-      if (!stillHasToken) {
-        set({
-          user: null,
-          isAuthenticated: false,
-          accessToken: "",
-        });
-      }
-    }
+    } catch (error) {
+  set({
+    user: null,
+    isAuthenticated: false,
+  });
+}
   },
 
   /* ================= HYDRATE (on refresh) ================= */

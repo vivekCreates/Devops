@@ -18,23 +18,17 @@ type CookieOptions = {
   maxAge: number;
 };
 
-// In production the frontend and backend are typically on different origins
-// (e.g. frontend on Vercel, backend on EC2). Cross-origin cookies require
-// sameSite "none" + secure (HTTPS). In development we use "lax" over HTTP.
+// Implement proper cookie settings:
+// Development: httpOnly: true, sameSite: "lax", secure: false
+// Production: httpOnly: true, sameSite: "none", secure: true
 const isProduction = env.NODE_ENV === "production";
 
-// Only enable `secure` cookies when the frontend is served over HTTPS.
-// If the deployment uses plain HTTP (e.g. http://<ip>), secure cookies
-// won't be sent by the browser, breaking refresh/logout flows.
-const useSecureCookies =
-  isProduction && (env.FRONTEND_URL?.startsWith("https://") ?? false);
-
 const options: CookieOptions = {
-    httpOnly: true,
-    secure: useSecureCookies,
-    sameSite: useSecureCookies ? "none" : "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-}
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const data = await registerUser(req.body);
@@ -61,8 +55,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
 
 export const refresh = asyncHandler(async (req: Request, res: Response) => {
-  // Accept refresh token from cookie (preferred) or request body (fallback)
-  const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+  const refreshToken = req.cookies?.refreshToken;
   if (!refreshToken) {
     throw new AppError("Refresh token not found", 401);
   }
@@ -77,8 +70,7 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const logout = asyncHandler(async (req: Request, res: Response) => {
-  // Accept refresh token from cookie (preferred) or request body (fallback)
-  const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+  const refreshToken = req.cookies?.refreshToken;
   await logoutUser(refreshToken);
   res.clearCookie("accessToken", options);
   res.clearCookie("refreshToken", options);

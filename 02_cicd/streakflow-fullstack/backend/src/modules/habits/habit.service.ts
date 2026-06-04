@@ -134,10 +134,24 @@ export const listHabits = async (userId: string) => {
       totalHabits: habits.length,
       completedToday: completedCount,
     },
-    habits: habits.map((habit) => ({
-      ...habitResponse(habit),
-      completedToday: habit.completions.length > 0,
-    })),
+    habits: habits.map((habit) => {
+      let currentStreak = habit.progress?.currentStreak ?? 0;
+      if (habit.progress?.lastCompletedDate) {
+        const dayGap = diffLocalDates(habit.progress.lastCompletedDate, today);
+        // If dayGap is 0 or 1, streak is active.
+        // If dayGap is 2 and they have freezes, streak is safe (will auto-freeze on completion).
+        // Otherwise, the streak is broken.
+        if (dayGap > 2 || (dayGap === 2 && user.streakFreezeCredits <= 0)) {
+          currentStreak = 0;
+        }
+      }
+
+      return {
+        ...habitResponse(habit),
+        currentStreak,
+        completedToday: habit.completions.length > 0,
+      };
+    }),
   };
 };
 
@@ -352,8 +366,21 @@ export const freezeHabitForToday = async (userId: string, habitId: string) => {
     });
 
     const existingProgress = habit.progress;
-    const currentStreak = existingProgress?.currentStreak ?? 0;
-    const bestStreak = existingProgress?.bestStreak ?? 0;
+    let currentStreak = existingProgress?.currentStreak ?? 0;
+    let bestStreak = existingProgress?.bestStreak ?? 0;
+
+    // Check if the streak is already broken before freezing today
+    if (existingProgress?.lastCompletedDate) {
+      const dayGap = diffLocalDates(existingProgress.lastCompletedDate, today.localDate);
+      // A dayGap of 1 means they completed it yesterday, so freezing today is valid to maintain the streak.
+      // If dayGap > 1, they missed yesterday. Since they are freezing today, yesterday remains missed.
+      // So the streak is irrevocably broken.
+      if (dayGap > 1) {
+        currentStreak = 0;
+      }
+    }
+
+    bestStreak = Math.max(bestStreak, currentStreak);
 
     await tx.habitProgress.upsert({
       where: { habitId },
@@ -364,6 +391,8 @@ export const freezeHabitForToday = async (userId: string, habitId: string) => {
         lastCompletedDate: today.localDate,
       },
       update: {
+        currentStreak,
+        bestStreak,
         lastCompletedDate: today.localDate,
       },
     });
