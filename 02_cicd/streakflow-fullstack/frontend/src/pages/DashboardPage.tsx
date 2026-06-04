@@ -26,11 +26,13 @@ const DashboardPage = () => {
 
   return (
     <div className="min-h-[100dvh] flex flex-col pb-10 bg-gradient-to-b from-[#e8faf6] to-white">
-      <DashboardHeader user={user} />
-      <DashboardTodayCard today={today} />
-      <DashboardWeeklyChart dashboardData={dashboardData} />
-      <DashboardStatsRow stats={stats} />
-      {stats.leaderboard && <DashboardLeaderboard leaderboard={stats.leaderboard} />}
+      <div className="max-w-6xl mx-auto w-full px-5 sm:px-6 lg:px-8">
+        <DashboardHeader user={user} />
+        <DashboardTodayCard today={today} />
+        <DashboardWeeklyChart dashboardData={dashboardData} />
+        <DashboardStatsRow stats={stats} />
+        {stats.leaderboard && <DashboardLeaderboard leaderboard={stats.leaderboard} />}
+      </div>
     </div>
   );
 };

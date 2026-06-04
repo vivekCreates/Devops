@@ -14,7 +14,7 @@ export const StreakFreezeCard = ({
   freezesLeft, isLoading, isActionTakenToday, todayStatus, markedToday, onUseFreeze 
 }: Props) => (
   <motion.div
-    className="mx-5 sm:mx-6 mt-4 sm:mt-5 bg-white rounded-2xl p-4 sm:p-5 shadow-[0_2px_16px_rgba(0,0,0,0.06)] flex items-center gap-3.5"
+    className="mt-4 sm:mt-5 bg-white rounded-2xl p-4 sm:p-5 shadow-[0_2px_16px_rgba(0,0,0,0.06)] flex items-center gap-3.5"
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5, delay: 0.4 }}

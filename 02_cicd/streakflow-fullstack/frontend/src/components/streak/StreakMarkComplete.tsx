@@ -8,7 +8,7 @@ interface Props {
 
 export const StreakMarkComplete = ({ isActionTakenToday, onMarkComplete }: Props) => (
   <motion.div
-    className="px-5 sm:px-6 pb-8 sm:pb-10 pt-4"
+    className="pb-8 sm:pb-10 pt-4"
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}

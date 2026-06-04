@@ -122,3 +122,20 @@ input[type="checkbox"].custom-check:checked::after {
 .progress-ring-fill {
   stroke: #2cb5a0;
 }
+
+/* ===== Custom Native Time Picker ===== */
+input[type="time"] {
+  color-scheme: light;
+  accent-color: #2cb5a0;
+}
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  /* Tint to sf-teal */
+  filter: invert(53%) sepia(87%) saturate(347%) hue-rotate(125deg) brightness(90%) contrast(92%);
+}
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}

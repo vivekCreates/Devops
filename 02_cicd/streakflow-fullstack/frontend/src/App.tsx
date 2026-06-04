@@ -16,18 +16,21 @@ import { Toaster } from 'react-hot-toast'
 
 import { useHabitStore } from './store/habitStore'
 import { useStatStore } from './store/statStore'
+import { useHabitReminders } from './hooks/useHabitReminders'
 
 function App() {
   const {getCurrentUser,hydrateAuth} = useAuthStore();
   const [appReady, setAppReady] = useState(false)
+
+  useHabitReminders();
 
   useEffect(() => {
     hydrateAuth();
     if (localStorage.getItem("accessToken")) {
       setAppReady(true);
       getCurrentUser();
-      useHabitStore.getState().getHabits();
       useStatStore.getState().getDashboardStats();
+      useHabitStore.getState().getHabits();
     } else {
       getCurrentUser().finally(() => {
         setAppReady(true);

@@ -42,7 +42,7 @@ export const DashboardWeeklyChart = ({ dashboardData }: Props) => {
   }, [dashboardData, maxBar]);
 
   return (
-    <div className="mx-6 mt-6 bg-white p-5 rounded-2xl shadow-sm">
+    <div className="mt-6 bg-white p-5 rounded-2xl shadow-sm">
       <h3 className="font-semibold mb-4">Weekly Progress</h3>
       <div className="flex items-end gap-2 h-[140px]">
         {renderedChart}

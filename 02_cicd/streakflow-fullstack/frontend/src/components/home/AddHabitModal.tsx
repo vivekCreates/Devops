@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, X, Clock } from 'lucide-react'
 import { useHabitStore } from '../../store/habitStore'
+import { CustomTimePicker } from '../CustomTimePicker'
 
 const emojiOptions = ['🏃', '📖', '🧘', '💧', '💪', '🎯', '🎨', '🎵', '✍️', '🧹', '🥗', '😴']
 
@@ -24,7 +25,7 @@ export const AddHabitModal = ({ isOpen, onClose }: Props) => {
       name: name.trim(),
       icon,
       reminderEnabled: scheduleEnabled,
-      reminderTime: scheduleEnabled ? scheduleTime : undefined,
+      reminderTime: scheduleEnabled ? (scheduleTime || '08:00') : undefined,
     })
     setName('')
     setIcon('✨')
@@ -119,11 +120,9 @@ export const AddHabitModal = ({ isOpen, onClose }: Props) => {
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.25 }}
                   >
-                    <input
-                      type="time"
+                    <CustomTimePicker
                       value={scheduleTime}
-                      onChange={(e) => setScheduleTime(e.target.value)}
-                      className="w-full h-12 px-4 rounded-xl border border-gray-200 bg-gray-50 text-text-dark text-[0.92rem] font-medium outline-none transition-all duration-200 focus:border-sf-teal focus:ring-2 focus:ring-sf-teal/15"
+                      onChange={setScheduleTime}
                     />
                   </motion.div>
                 )}

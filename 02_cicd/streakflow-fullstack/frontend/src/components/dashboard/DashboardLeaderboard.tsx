@@ -6,7 +6,7 @@ interface Props {
 }
 
 export const DashboardLeaderboard = ({ leaderboard }: Props) => (
-  <div className="mx-6 mt-6 bg-white p-5 rounded-2xl shadow-sm">
+  <div className="mt-6 bg-white p-5 rounded-2xl shadow-sm">
     <h3 className="font-semibold mb-4">Leaderboard</h3>
 
     <div className="flex flex-col gap-3">

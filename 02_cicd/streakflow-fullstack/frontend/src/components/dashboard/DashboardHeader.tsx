@@ -7,7 +7,7 @@ interface Props {
 
 export const DashboardHeader = ({ user }: Props) => (
   <motion.div
-    className="px-6 pt-10"
+    className="pt-10"
     initial={{ opacity: 0, y: -10 }}
     animate={{ opacity: 1, y: 0 }}
   >

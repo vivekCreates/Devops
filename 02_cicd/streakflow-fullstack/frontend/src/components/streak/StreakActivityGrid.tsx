@@ -57,7 +57,7 @@ export const StreakActivityGrid = ({ heatmap, markedToday }: Props) => {
 
   return (
     <motion.div
-      className="mx-5 sm:mx-6 mt-6 sm:mt-7"
+      className="mt-6 sm:mt-7"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.3 }}

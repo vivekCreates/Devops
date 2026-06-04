@@ -12,31 +12,42 @@ const StreakPage = () => {
   const { dashboardData, getDashboardStats } = useStatStore();
   const { freezeHabit, completeHabit, isLoading } = useHabitStore();
 
-  const habit = dashboardData?.habits?.[0];
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   useEffect(() => {
     getDashboardStats();
   }, [getDashboardStats]);
 
-  const [markedToday, setMarkedToday] = useState(false);
+  const habitsList = dashboardData?.habits || [];
+  const habit = habitsList[selectedIndex] || null;
+
+  const handleNext = () => {
+    if (habitsList.length > 0) {
+      setSelectedIndex((prev) => (prev + 1) % habitsList.length);
+    }
+  };
+
+  const handlePrev = () => {
+    if (habitsList.length > 0) {
+      setSelectedIndex((prev) => (prev - 1 + habitsList.length) % habitsList.length);
+    }
+  };
   
   const freezesLeft = dashboardData?.streakFreeze?.monthlyCredits ?? 0;
   
   const heatmap = dashboardData?.stats?.activityHeatmap;
   const todayStatus = heatmap?.[heatmap?.length - 1]?.status;
-  const isActionTakenToday = todayStatus === 'completed' || todayStatus === 'frozen' || markedToday;
+  // This habit is considered acted on if it was explicitly completed today or if the day was globally frozen
+  const isActionTakenToday = habit?.completedToday || todayStatus === 'frozen';
 
   const handleMarkComplete = useCallback(async () => {
     if (habit) {
       try {
         await completeHabit(habit.id);
-        setMarkedToday(true);
         await getDashboardStats();
       } catch (error) {
         console.error(error);
       }
-    } else {
-      setMarkedToday(true);
     }
   }, [habit, completeHabit, getDashboardStats]);
 
@@ -66,33 +77,40 @@ const StreakPage = () => {
         background: 'linear-gradient(180deg, #e8faf6 0%, #f0fdf9 30%, #f7fdfb 60%, #ffffff 100%)',
       }}
     >
-      <StreakHeader habit={habit} />
-      
-      <StreakCurrentCard 
-        totalCompletions={dashboardData.stats.totalCompletions}
-        bestStreak={dashboardData.stats.bestStreak}
-      />
+      <div className="max-w-6xl mx-auto w-full px-5 sm:px-6 lg:px-8 flex-1 flex flex-col">
+        <StreakHeader 
+          habit={habit} 
+          totalHabits={habitsList.length}
+          onNext={handleNext}
+          onPrev={handlePrev}
+        />
+        
+        <StreakCurrentCard 
+          currentStreak={habit?.currentStreak || 0}
+          bestStreak={habit?.bestStreak || 0}
+        />
 
-      <StreakActivityGrid 
-        heatmap={heatmap || []}
-        markedToday={markedToday}
-      />
+        <StreakActivityGrid 
+          heatmap={heatmap || []}
+          markedToday={habit?.completedToday || false}
+        />
 
-      <StreakFreezeCard 
-        freezesLeft={freezesLeft}
-        isLoading={isLoading}
-        isActionTakenToday={isActionTakenToday}
-        todayStatus={todayStatus}
-        markedToday={markedToday}
-        onUseFreeze={handleUseFreeze}
-      />
+        <StreakFreezeCard 
+          freezesLeft={freezesLeft}
+          isLoading={isLoading}
+          isActionTakenToday={isActionTakenToday}
+          todayStatus={todayStatus}
+          markedToday={habit?.completedToday || false}
+          onUseFreeze={handleUseFreeze}
+        />
 
-      <div className="flex-1 min-h-6" />
+        <div className="flex-1 min-h-6" />
 
-      <StreakMarkComplete 
-        isActionTakenToday={isActionTakenToday}
-        onMarkComplete={handleMarkComplete}
-      />
+        <StreakMarkComplete 
+          isActionTakenToday={isActionTakenToday}
+          onMarkComplete={handleMarkComplete}
+        />
+      </div>
     </div>
   )
 }

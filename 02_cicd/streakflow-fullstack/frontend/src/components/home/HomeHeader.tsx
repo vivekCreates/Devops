@@ -8,7 +8,7 @@ export const HomeHeader = () => {
 
   return (
     <motion.header
-      className="px-5 sm:px-6 pt-6 sm:pt-8 pb-2 flex items-center justify-between"
+      className="pt-6 sm:pt-8 pb-2 flex items-center justify-between"
       initial={{ opacity: 0, y: -15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}

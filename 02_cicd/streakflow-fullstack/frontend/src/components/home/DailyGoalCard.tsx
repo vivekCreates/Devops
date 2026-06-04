@@ -15,7 +15,7 @@ export const DailyGoalCard = ({ completedCount, totalCount, percentage, longestS
 
   return (
     <motion.div
-      className="mx-5 sm:mx-6 mt-5 sm:mt-6 bg-white rounded-2xl p-5 sm:p-6 flex items-center gap-5 sm:gap-6 shadow-[0_2px_16px_rgba(0,0,0,0.06)]"
+      className="mt-5 sm:mt-6 bg-white rounded-2xl p-5 sm:p-6 flex items-center gap-5 sm:gap-6 shadow-[0_2px_16px_rgba(0,0,0,0.06)]"
       initial={{ opacity: 0, y: 20, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.6, delay: 0.15 }}

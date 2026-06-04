@@ -6,7 +6,7 @@ interface Props {
 }
 
 export const DashboardTodayCard = ({ today }: Props) => (
-  <div className="mx-6 mt-6 bg-white p-5 rounded-2xl shadow-sm">
+  <div className="mt-6 bg-white p-5 rounded-2xl shadow-sm">
     <div className="flex justify-between items-center">
       <div>
         <p className="text-sm text-gray-500">Today</p>

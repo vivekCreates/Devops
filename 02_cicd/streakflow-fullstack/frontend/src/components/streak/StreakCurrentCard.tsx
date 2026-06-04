@@ -2,13 +2,13 @@ import { motion } from 'framer-motion'
 import { Flame, Trophy } from 'lucide-react'
 
 interface Props {
-  totalCompletions: number;
+  currentStreak: number;
   bestStreak: number;
 }
 
-export const StreakCurrentCard = ({ totalCompletions, bestStreak }: Props) => (
+export const StreakCurrentCard = ({ currentStreak, bestStreak }: Props) => (
   <motion.div
-    className="mx-5 sm:mx-6 -mt-5 bg-white rounded-2xl p-5 sm:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.08)] flex flex-col items-center text-center relative z-10"
+    className="-mt-5 bg-white rounded-2xl p-5 sm:p-6 shadow-[0_4px_24px_rgba(0,0,0,0.08)] flex flex-col items-center text-center relative z-10"
     initial={{ opacity: 0, y: 25, scale: 0.96 }}
     animate={{ opacity: 1, y: 0, scale: 1 }}
     transition={{ duration: 0.6, delay: 0.2 }}
@@ -20,7 +20,7 @@ export const StreakCurrentCard = ({ totalCompletions, bestStreak }: Props) => (
     <div className="flex items-center gap-1.5 mb-0.5">
       <Flame size={22} className="text-orange-400" />
       <span className="text-[2rem] sm:text-[2.2rem] font-extrabold text-text-dark leading-none">
-        {totalCompletions}
+        {currentStreak}
       </span>
     </div>
     <span className="text-[0.8rem] sm:text-[0.85rem] text-text-dark-secondary font-semibold mb-2">

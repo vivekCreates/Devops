@@ -6,7 +6,7 @@ interface Props {
 }
 
 export const DashboardStatsRow = ({ stats }: Props) => (
-  <div className="mx-6 mt-6 grid grid-cols-2 gap-3">
+  <div className="mt-6 grid grid-cols-2 gap-3">
     <div className="bg-white p-4 rounded-2xl shadow-sm text-center">
       <div className="text-2xl font-bold text-gray-800">
         {stats.totalCompletions}

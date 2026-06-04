@@ -27,39 +27,41 @@ const HomePage = () => {
 
   return (
     <div className="min-h-[100dvh] flex flex-col" style={{ background: 'linear-gradient(180deg, #e8faf6 0%, #f0fdf9 30%, #f7fdfb 60%, #ffffff 100%)' }}>
-      <HomeHeader />
+      <div className="max-w-6xl mx-auto w-full px-5 sm:px-6 lg:px-8 flex-1 flex flex-col">
+        <HomeHeader />
 
-      <DailyGoalCard 
-        completedCount={completedCount}
-        totalCount={totalCount}
-        percentage={percentage}
-        longestStreak={longestStreak}
-      />
+        <DailyGoalCard 
+          completedCount={completedCount}
+          totalCount={totalCount}
+          percentage={percentage}
+          longestStreak={longestStreak}
+        />
 
-      <motion.div
-        className="px-5 sm:px-6 mt-7 sm:mt-8 mb-3 flex items-center justify-between"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.35 }}
-      >
-        <h3 className="text-[1.1rem] sm:text-lg font-bold text-text-dark">Today's Habits</h3>
-        <span className="text-[0.82rem] sm:text-sm text-text-dark-secondary font-medium">
-          {completedCount}/{totalCount} done
-        </span>
-      </motion.div>
+        <motion.div
+          className="mt-7 sm:mt-8 mb-3 flex items-center justify-between"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.35 }}
+        >
+          <h3 className="text-[1.1rem] sm:text-lg font-bold text-text-dark">Today's Habits</h3>
+          <span className="text-[0.82rem] sm:text-sm text-text-dark-secondary font-medium">
+            {completedCount}/{totalCount} done
+          </span>
+        </motion.div>
 
-      <div className="flex-1 px-5 sm:px-6 pb-24 flex flex-col gap-3">
-        <AnimatePresence>
-          {habits.map((habit, index) => (
-            <HabitItem
-              key={habit.id}
-              habit={habit}
-              index={index}
-              onEdit={setEditingHabit}
-              onDelete={setDeletingHabit}
-            />
-          ))}
-        </AnimatePresence>
+        <div className="flex-1 pb-24 flex flex-col gap-3">
+          <AnimatePresence>
+            {habits.map((habit, index) => (
+              <HabitItem
+                key={habit.id}
+                habit={habit}
+                index={index}
+                onEdit={setEditingHabit}
+                onDelete={setDeletingHabit}
+              />
+            ))}
+          </AnimatePresence>
+        </div>
       </div>
 
       <motion.button
