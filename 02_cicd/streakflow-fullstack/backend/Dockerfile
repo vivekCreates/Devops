@@ -2,11 +2,17 @@ FROM node:22-slim
 
 WORKDIR /app
 
+RUN apt-get update -y && apt-get install -y openssl
+
 COPY package*.json ./
-RUN npm install
+
 
 COPY prisma ./prisma
+
+RUN npm install
+
 COPY tsconfig*.json ./
+
 COPY src ./src
 
 RUN npm run build
