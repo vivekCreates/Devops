@@ -76,6 +76,17 @@ const SignInPage = () => {
         </p>
       </motion.div>
 
+      {/* Error Message */}
+      {error && (
+        <motion.div
+          className="mb-4 text-red-100 text-[0.85rem] font-medium text-center bg-red-500/20 backdrop-blur-md border border-red-500/30 rounded-xl py-2.5 px-3 relative z-10 w-full max-w-[420px]"
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          {error}
+        </motion.div>
+      )}
+
       {/* Form Card */}
       <motion.form
         className="w-full max-w-[420px] bg-white/12 backdrop-blur-[20px] border border-white/20 rounded-2xl p-5 sm:p-7 flex flex-col gap-4 sm:gap-5 relative z-10"
@@ -140,17 +151,6 @@ const SignInPage = () => {
             </button>
           </div>
         </div>
-
-        {/* Error Message */}
-        {error && (
-          <motion.div
-            className="text-red-400 text-[0.82rem] text-center bg-red-500/10 border border-red-500/20 rounded-xl py-2.5 px-3"
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            {error}
-          </motion.div>
-        )}
 
         {/* Submit Button */}
         <motion.button

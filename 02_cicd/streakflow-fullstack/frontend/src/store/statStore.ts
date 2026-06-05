@@ -77,7 +77,6 @@ export const useStatStore = create<StatState>((set) => ({
         set({ isLoading: true, error: null });
         try{
             const {data} = await getDashboardStatsApi();
-            console.log("Dashboard Stats Response:", data);
             if(!data.success) {
                 throw new Error(data.message || "Failed to fetch dashboard stats");
             }
@@ -85,7 +84,9 @@ export const useStatStore = create<StatState>((set) => ({
         }catch(error:any) {
             const errorMsg = error.response?.data?.message || error.message || "Failed to fetch dashboard stats";
             set({ error: errorMsg, isLoading: false });
-            toast.error(errorMsg);
+            if (error.response?.status !== 401) {
+                toast.error(errorMsg);
+            }
         }
     },
 

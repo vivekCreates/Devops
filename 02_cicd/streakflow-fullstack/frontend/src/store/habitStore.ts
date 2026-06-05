@@ -129,7 +129,9 @@ export const useHabitStore = create<HabitState>((set,get) => ({
         }catch(error:any) {
             const errorMsg = error.response?.data?.message || error.message || "Failed to fetch habits";
             set({ error: errorMsg });
-            toast.error(errorMsg);
+            if (error.response?.status !== 401) {
+                toast.error(errorMsg);
+            }
         }
     },
 
