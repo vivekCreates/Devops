@@ -8,12 +8,18 @@ import { HabitItem } from '../components/home/HabitItem'
 import { AddHabitModal } from '../components/home/AddHabitModal'
 import { EditHabitModal } from '../components/home/EditHabitModal'
 import { DeleteHabitModal } from '../components/home/DeleteHabitModal'
+import Loader from '../components/Loader'
 
 const HomePage = () => {
-  const { habits, getHabits } = useHabitStore()
+  const { habits, getHabits, isLoading } = useHabitStore()
+  const [isInitialLoad, setIsInitialLoad] = useState(habits.length === 0);
 
   useEffect(() => {
-    getHabits()
+    const fetchHabits = async () => {
+      await getHabits();
+      setIsInitialLoad(false);
+    };
+    fetchHabits();
   }, [])
 
   const [showAddModal, setShowAddModal] = useState(false)
@@ -24,6 +30,14 @@ const HomePage = () => {
   const totalCount = habits?.length || 0
   const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
   const longestStreak = habits?.reduce((max, h) => Math.max(max, h.bestStreak), 0) || 0
+  
+  if (isInitialLoad && isLoading) {
+    return (
+      <div className="min-h-[100dvh] flex flex-col bg-gradient-to-b from-[#e8faf6] to-white">
+        <Loader variant="inline" message="Loading your habits" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[100dvh] flex flex-col" style={{ background: 'linear-gradient(180deg, #e8faf6 0%, #f0fdf9 30%, #f7fdfb 60%, #ffffff 100%)' }}>

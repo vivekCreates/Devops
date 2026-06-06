@@ -27,10 +27,11 @@ function App() {
   useEffect(() => {
     hydrateAuth();
     if (localStorage.getItem("accessToken")) {
-      setAppReady(true);
-      getCurrentUser();
       useStatStore.getState().getDashboardStats();
       useHabitStore.getState().getHabits();
+      getCurrentUser().finally(() => {
+        setAppReady(true);
+      });
     } else {
       getCurrentUser().finally(() => {
         setAppReady(true);

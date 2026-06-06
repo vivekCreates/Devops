@@ -68,11 +68,16 @@ apiClient.interceptors.response.use(
 
     const isRefreshRequest =
       originalRequest.url?.includes("/auth/refresh");
+      
+    const isLoginOrRegister = 
+      originalRequest.url?.includes("/auth/login") || 
+      originalRequest.url?.includes("/auth/register");
 
     if (
       error.response?.status !== 401 ||
       originalRequest._retry ||
-      isRefreshRequest
+      isRefreshRequest ||
+      isLoginOrRegister
     ) {
       return Promise.reject(error);
     }
