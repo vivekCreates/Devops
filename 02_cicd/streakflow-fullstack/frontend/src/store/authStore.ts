@@ -14,6 +14,7 @@ interface User {
   streakFreezeCredits: number;
   createdAt: string;
   timezone: string;
+  avatarUrl?: string;
 }
 
 interface LoginPayload {
@@ -40,6 +41,8 @@ interface AuthState {
   logout: () => Promise<void>;
   getCurrentUser: () => Promise<void>;
   hydrateAuth: () => void;
+  updateProfile: (data: FormData) => Promise<boolean>;
+  googleLogin: (accessToken: string) => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -111,6 +114,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     try {
+      set({ isLoading: true });
       await logoutApi();
       toast.success("Logged out successfully");
     } catch (error: any) {
@@ -123,6 +127,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         isAuthenticated: false,
         accessToken: "",
         error: null,
+        isLoading: false,
       });
     }
   },
@@ -162,14 +167,59 @@ getCurrentUser: async () => {
   }
   },
 
-hydrateAuth: () => {
-  const token = localStorage.getItem("accessToken");
+  hydrateAuth: () => {
+    const token = localStorage.getItem("accessToken");
 
-  if (token) {
-    set({
-      accessToken: token,
-      isAuthenticated: true,
-    });
+    if (token) {
+      set({
+        accessToken: token,
+        isAuthenticated: true,
+      });
+    }
+  },
+
+  updateProfile: async (data: FormData) => {
+    try {
+      set({ isLoading: true });
+      const { updateProfileApi } = await import("../api/auth");
+      const res = await updateProfileApi(data);
+      set({ user: res.data.data, isLoading: false });
+      toast.success("Profile updated successfully!");
+      return true;
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.message || "Profile update failed";
+      toast.error(errorMsg);
+      set({ isLoading: false, error: errorMsg });
+      return false;
+    }
+  },
+
+  googleLogin: async (accessToken: string) => {
+    try {
+      set({ isLoading: true, error: null });
+      const { googleLoginApi } = await import("../api/auth");
+      const { data } = await googleLoginApi(accessToken);
+      const { user, tokens } = data.data;
+
+      localStorage.setItem("accessToken", tokens.accessToken);
+
+      set({
+        user,
+        accessToken: tokens.accessToken,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+
+      toast.success("Successfully logged in with Google!");
+      return true;
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.message || "Google Login failed";
+      toast.error(errorMsg);
+      set({
+        error: errorMsg,
+        isLoading: false,
+      });
+      return false;
+    }
   }
-}
 }));

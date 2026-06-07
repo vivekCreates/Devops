@@ -122,6 +122,7 @@ export const useHabitStore = create<HabitState>((set,get) => ({
 
     getHabits: async () => {
         if (!localStorage.getItem("accessToken")) return;
+        if (get().isLoading) return;
         set({ isLoading: true, error: null });
         try{
             const {data} = await getHabitsApi();

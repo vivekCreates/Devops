@@ -67,13 +67,14 @@ interface StatState {
 
 }
 
-export const useStatStore = create<StatState>((set) => ({
+export const useStatStore = create<StatState>((set, get) => ({
     dashboardData: null,
     isLoading: false,
     error: null,
 
     getDashboardStats: async () => {
         if (!localStorage.getItem("accessToken")) return;
+        if (get().isLoading) return;
         set({ isLoading: true, error: null });
         try{
             const {data} = await getDashboardStatsApi();

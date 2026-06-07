@@ -81,3 +81,34 @@ export const me = asyncHandler(async (req: Request, res: Response) => {
   const data = await getCurrentUserProfile(req.user!.id);
   sendSuccess(res, 200, data);
 });
+
+export const updateMe = asyncHandler(async (req: Request, res: Response) => {
+  let avatarUrl: string | undefined;
+
+  if (req.file) {
+    const { uploadToCloudinary } = await import("../../utils/cloudinary.js");
+    avatarUrl = await uploadToCloudinary(req.file.buffer, `avatars/${req.user!.id}`);
+  }
+
+  const { fullName } = req.body;
+  const { updateUserProfile } = await import("./auth.service.js");
+  
+  const data = await updateUserProfile(req.user!.id, { fullName, avatarUrl });
+  sendSuccess(res, 200, data, "Profile updated successfully");
+});
+
+export const googleLogin = asyncHandler(async (req: Request, res: Response) => {
+  const { accessToken } = req.body;
+  const { googleLoginUser } = await import("./auth.service.js");
+  const data = await googleLoginUser(accessToken);
+  
+  // Set refresh token in cookie
+  res.cookie("refreshToken", data.tokens.refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+  });
+
+  sendSuccess(res, 200, { user: data.user, tokens: { accessToken: data.tokens.accessToken } });
+});

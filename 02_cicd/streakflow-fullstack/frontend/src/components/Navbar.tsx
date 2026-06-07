@@ -10,6 +10,7 @@ import {
   X,
   ChevronDown,
   User,
+  Loader2,
 } from 'lucide-react'
 
 import { useAuthStore } from '../store/authStore'
@@ -30,7 +31,7 @@ const navLinks: NavLink[] = [
 const Navbar = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const { user, logout } = useAuthStore()
+  const { user, logout, isLoading } = useAuthStore()
 
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -142,8 +143,12 @@ const Navbar = () => {
                   }`}
                   id="nav-profile-btn"
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sf-teal-light to-sf-teal flex items-center justify-center text-white text-sm font-bold shadow-[0_2px_8px_rgba(44,181,160,0.3)]">
-                    {userInitial}
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sf-teal-light to-sf-teal flex items-center justify-center text-white text-sm font-bold overflow-hidden shadow-[0_2px_8px_rgba(44,181,160,0.3)] shrink-0">
+                    {user?.avatarUrl ? (
+                      <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      userInitial
+                    )}
                   </div>
                   <span className="text-[0.85rem] font-semibold text-text-dark max-w-[120px] truncate">
                     {user?.fullName || 'User'}
@@ -182,7 +187,7 @@ const Navbar = () => {
                           className="w-full px-4 py-2.5 flex items-center gap-3 text-[0.85rem] font-medium text-text-dark-secondary hover:bg-gray-50 hover:text-text-dark cursor-pointer transition-colors duration-200"
                           onClick={() => {
                             setProfileOpen(false)
-                            navigate(ROUTES.HOME)
+                            navigate(ROUTES.PROFILE)
                           }}
                           id="nav-dropdown-profile"
                         >
@@ -190,12 +195,13 @@ const Navbar = () => {
                           Profile
                         </button>
                         <button
-                          className="w-full px-4 py-2.5 flex items-center gap-3 text-[0.85rem] font-medium text-red-400 hover:bg-red-50 hover:text-red-500 cursor-pointer transition-colors duration-200"
+                          className={`w-full px-4 py-2.5 flex items-center gap-3 text-[0.85rem] font-medium text-red-400 hover:bg-red-50 hover:text-red-500 cursor-pointer transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed`}
                           onClick={handleLogout}
+                          disabled={isLoading}
                           id="nav-dropdown-logout"
                         >
-                          <LogOut size={16} />
-                          Sign Out
+                          {isLoading ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={16} />}
+                          {isLoading ? 'Signing out...' : 'Sign Out'}
                         </button>
                       </div>
                     </motion.div>
@@ -262,8 +268,12 @@ const Navbar = () => {
               {/* Drawer header */}
               <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-black/[0.06]">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sf-teal-light to-sf-teal flex items-center justify-center text-white text-lg font-bold shadow-[0_2px_8px_rgba(44,181,160,0.3)]">
-                    {userInitial}
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sf-teal-light to-sf-teal flex items-center justify-center text-white text-lg font-bold overflow-hidden shadow-[0_2px_8px_rgba(44,181,160,0.3)] shrink-0">
+                    {user?.avatarUrl ? (
+                      <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      userInitial
+                    )}
                   </div>
                   <div>
                     <p className="text-[0.9rem] font-bold text-text-dark truncate max-w-[160px]">
@@ -306,20 +316,41 @@ const Navbar = () => {
                     )}
                   </motion.button>
                 ))}
+                
+                {/* Profile Link (Mobile only) */}
+                <motion.button
+                  onClick={() => navigate(ROUTES.PROFILE)}
+                  className={`w-full px-4 py-3 rounded-xl text-[0.92rem] font-semibold flex items-center gap-3 cursor-pointer transition-all duration-300 ${
+                    isActive(ROUTES.PROFILE)
+                      ? 'text-sf-teal bg-sf-teal/8'
+                      : 'text-text-dark-secondary hover:text-text-dark hover:bg-gray-50'
+                  }`}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: navLinks.length * 0.06 }}
+                  id="nav-mobile-profile"
+                >
+                  <User size={18} />
+                  Profile
+                  {isActive(ROUTES.PROFILE) && (
+                    <div className="ml-auto w-2 h-2 rounded-full bg-sf-teal" />
+                  )}
+                </motion.button>
               </div>
 
               {/* Logout */}
               <div className="px-3 pb-6 pt-2 border-t border-black/[0.06]">
                 <motion.button
-                  className="w-full px-4 py-3 rounded-xl text-[0.92rem] font-semibold flex items-center gap-3 text-red-400 hover:bg-red-50 hover:text-red-500 cursor-pointer transition-all duration-200"
+                  className={`w-full px-4 py-3 rounded-xl text-[0.92rem] font-semibold flex items-center gap-3 text-red-400 hover:bg-red-50 hover:text-red-500 cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed`}
                   onClick={handleLogout}
+                  disabled={isLoading}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: 0.25 }}
                   id="nav-mobile-logout"
                 >
-                  <LogOut size={18} />
-                  Sign Out
+                  {isLoading ? <Loader2 size={18} className="animate-spin" /> : <LogOut size={18} />}
+                  {isLoading ? 'Signing out...' : 'Sign Out'}
                 </motion.button>
               </div>
             </motion.div>

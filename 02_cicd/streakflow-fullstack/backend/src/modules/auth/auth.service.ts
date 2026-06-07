@@ -4,6 +4,11 @@ import { prisma } from "../../lib/prisma.js";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../../utils/jwt.js";
 import { comparePassword, hashPassword } from "../../utils/password.js";
 import { hashToken } from "../../utils/token.js";
+import { OAuth2Client } from "google-auth-library";
+import { env } from "../../config/env.js";
+import crypto from "crypto";
+
+const client = new OAuth2Client(env.GOOGLE_CLIENT_ID);
 
 type DbClient = PrismaClient | Prisma.TransactionClient;
 
@@ -25,6 +30,7 @@ const sanitizeUser = (user: {
   email: string;
   timezone: string;
   streakFreezeCredits: number;
+  avatarUrl?: string | null;
   createdAt: Date;
 }) => ({
   id: user.id,
@@ -32,6 +38,7 @@ const sanitizeUser = (user: {
   email: user.email,
   timezone: user.timezone,
   streakFreezeCredits: user.streakFreezeCredits,
+  avatarUrl: user.avatarUrl,
   createdAt: user.createdAt,
 });
 
@@ -75,6 +82,7 @@ export const registerUser = async (payload: RegisterPayload) => {
       email: true,
       timezone: true,
       streakFreezeCredits: true,
+      avatarUrl: true,
       createdAt: true,
     },
   });
@@ -95,6 +103,7 @@ export const loginUser = async (payload: LoginPayload) => {
       timezone: true,
       passwordHash: true,
       streakFreezeCredits: true,
+      avatarUrl: true,
       createdAt: true,
     },
   });
@@ -126,6 +135,7 @@ export const refreshSession = async (refreshToken: string) => {
           email: true,
           timezone: true,
           streakFreezeCredits: true,
+          avatarUrl: true,
           createdAt: true,
         },
       },
@@ -175,6 +185,7 @@ export const getCurrentUserProfile = async (userId: string) => {
       email: true,
       timezone: true,
       streakFreezeCredits: true,
+      avatarUrl: true,
       createdAt: true,
     },
   });
@@ -184,4 +195,95 @@ export const getCurrentUserProfile = async (userId: string) => {
   }
 
   return sanitizeUser(user);
+};
+
+export const updateUserProfile = async (
+  userId: string,
+  payload: { fullName?: string; avatarUrl?: string }
+) => {
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...(payload.fullName && { fullName: payload.fullName.trim() }),
+      ...(payload.avatarUrl && { avatarUrl: payload.avatarUrl }),
+    },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      timezone: true,
+      streakFreezeCredits: true,
+      avatarUrl: true,
+      createdAt: true,
+    },
+  });
+
+  return sanitizeUser(user);
+};
+
+export const googleLoginUser = async (accessToken: string) => {
+  const response = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  
+  if (!response.ok) {
+    throw new AppError("Invalid Google Access Token", 401);
+  }
+  
+  const payload = await response.json();
+  
+  if (!payload || !payload.email) {
+    throw new AppError("Could not retrieve email from Google", 401);
+  }
+  
+  const email = payload.email.trim().toLowerCase();
+  
+  let user = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      timezone: true,
+      passwordHash: true,
+      streakFreezeCredits: true,
+      avatarUrl: true,
+      createdAt: true,
+    },
+  });
+  
+  if (!user) {
+    // Register new user via Google
+    const randomPassword = crypto.randomBytes(32).toString('hex');
+    user = await prisma.user.create({
+      data: {
+        fullName: payload.name || "Google User",
+        email,
+        passwordHash: await hashPassword(randomPassword),
+        timezone: "UTC",
+        avatarUrl: payload.picture,
+      },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        timezone: true,
+        passwordHash: true,
+        streakFreezeCredits: true,
+        avatarUrl: true,
+        createdAt: true,
+      },
+    });
+  } else {
+    if (!user.avatarUrl && payload.picture) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { avatarUrl: payload.picture },
+      });
+      user.avatarUrl = payload.picture;
+    }
+  }
+
+  const tokens = await issueTokenPair(prisma, user);
+  return { user: sanitizeUser(user), tokens };
 };

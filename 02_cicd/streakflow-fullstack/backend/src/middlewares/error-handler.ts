@@ -9,9 +9,10 @@ export const errorHandler = (
   _next: NextFunction,
 ) => {
   if (error instanceof ZodError) {
+    const errorMessages = error.issues.map((issue) => issue.message).join(", ");
     return res.status(400).json({
       success: false,
-      message: "Validation failed",
+      message: errorMessages,
       errors: error.issues.map((issue) => ({
         path: issue.path.join("."),
         message: issue.message,

@@ -21,9 +21,6 @@ export const HomeHeader = () => {
           You're on a roll! Keep it up 🔥
         </p>
       </div>
-      <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-sf-teal-light to-sf-teal flex items-center justify-center text-white text-lg font-bold shadow-md shrink-0">
-        {user?.fullName?.charAt(0)?.toUpperCase() || 'U'}
-      </div>
     </motion.header>
   )
 }

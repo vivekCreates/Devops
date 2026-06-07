@@ -28,6 +28,10 @@ const envSchema = z.object({
   JWT_REFRESH_TTL: z.string().default("30d"),
   BCRYPT_SALT_ROUNDS: z.coerce.number().int().min(8).max(15).default(12),
   MONTHLY_FREEZE_CREDITS: z.coerce.number().int().min(0).max(10).default(2),
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
+  GOOGLE_CLIENT_ID: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

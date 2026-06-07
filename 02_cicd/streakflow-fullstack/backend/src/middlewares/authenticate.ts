@@ -32,6 +32,8 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
         email: true,
         fullName: true,
         timezone: true,
+        streakFreezeCredits: true,
+        freezeCreditsResetAt: true,
       },
     });
 
@@ -39,9 +41,14 @@ export const authenticate = async (req: Request, _res: Response, next: NextFunct
       throw new AppError("Unauthorized", 401);
     }
 
-    await ensureMonthlyFreezeCredits(user.id);
+    const updatedUser = await ensureMonthlyFreezeCredits(user);
 
-    req.user = user;
+    req.user = {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      fullName: updatedUser.fullName,
+      timezone: updatedUser.timezone,
+    };
     next();
   } catch (error) {
     next(error);

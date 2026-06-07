@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Mail, Lock, Eye, EyeOff, LogIn, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useGoogleLogin } from '@react-oauth/google'
 import Logo from '../components/Logo'
 import { useAuthStore } from '../store/authStore'
 import { useNavigator } from '../hooks/useNavigator'
@@ -17,8 +18,17 @@ const SignInPage = () => {
 
   const {email,password} = form;
   const {goToHome} = useNavigator();
-  const {login,isLoading, error} = useAuthStore();
+  const {login, googleLogin, isLoading} = useAuthStore();
 
+  const googleLoginAction = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      const success = await googleLogin(tokenResponse.access_token);
+      if (success) goToHome();
+    },
+    onError: () => {
+      console.error("Google login failed.");
+    }
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -76,16 +86,7 @@ const SignInPage = () => {
         </p>
       </motion.div>
 
-      {/* Error Message */}
-      {error && (
-        <motion.div
-          className="mb-4 text-red-100 text-[0.85rem] font-medium text-center bg-red-500/20 backdrop-blur-md border border-red-500/30 rounded-xl py-2.5 px-3 relative z-10 w-full max-w-[420px]"
-          initial={{ opacity: 0, y: -5 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          {error}
-        </motion.div>
-      )}
+
 
       {/* Form Card */}
       <motion.form
@@ -165,6 +166,24 @@ const SignInPage = () => {
             isLoading ? <><Loader2 className="animate-spin" size={18} /><span>Signing In...</span></> : <span>Sign In</span>
           }
         </motion.button>
+
+        <div className="flex items-center gap-3 my-1">
+          <hr className="flex-1 border-white/20" />
+          <span className="text-white/50 text-xs uppercase tracking-wider font-semibold">Or continue with</span>
+          <hr className="flex-1 border-white/20" />
+        </div>
+        
+        <div className="flex justify-center w-full relative z-20">
+          <motion.button
+            type="button"
+            onClick={() => googleLoginAction()}
+            className="w-full h-12 sm:h-[52px] bg-white text-gray-900 rounded-xl text-[0.935rem] sm:text-base font-semibold flex items-center justify-center gap-3 cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(255,255,255,0.2)] active:translate-y-0"
+            whileTap={{ scale: 0.98 }}
+          >
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
+            Continue with Google
+          </motion.button>
+        </div>
       </motion.form>
 
       {/* Sign Up Link */}

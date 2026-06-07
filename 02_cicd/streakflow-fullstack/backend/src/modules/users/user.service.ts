@@ -23,8 +23,8 @@ export const getUserOrThrow = async (userId: string) => {
   return user;
 };
 
-export const ensureMonthlyFreezeCredits = async (userId: string) => {
-  const user = await getUserOrThrow(userId);
+export const ensureMonthlyFreezeCredits = async (userOrId: string | { id: string; timezone: string; streakFreezeCredits: number; freezeCreditsResetAt: Date; email: string; fullName: string; }) => {
+  const user = typeof userOrId === "string" ? await getUserOrThrow(userOrId) : userOrId;
   const now = new Date();
 
   const currentMonth = getYearMonthInTimeZone(now, user.timezone);
@@ -35,7 +35,7 @@ export const ensureMonthlyFreezeCredits = async (userId: string) => {
   }
 
   return prisma.user.update({
-    where: { id: userId },
+    where: { id: user.id },
     data: {
       streakFreezeCredits: env.MONTHLY_FREEZE_CREDITS,
       freezeCreditsResetAt: now,

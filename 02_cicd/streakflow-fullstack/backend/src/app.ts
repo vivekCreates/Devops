@@ -17,7 +17,7 @@ app.use(compression());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: env.FRONTEND_URL,
+    origin:[ env.FRONTEND_URL,"http://localhost:5173","http://localhost:5174"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   }),

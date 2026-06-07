@@ -17,6 +17,7 @@ model User {
   fullName            String
   email               String             @unique
   passwordHash        String
+  avatarUrl           String?
   timezone            String             @default("UTC")
   streakFreezeCredits Int                @default(2)
   freezeCreditsResetAt DateTime          @default(now())

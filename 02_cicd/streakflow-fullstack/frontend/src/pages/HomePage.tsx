@@ -79,7 +79,7 @@ const HomePage = () => {
       </div>
 
       <motion.button
-        className="fixed bottom-6 right-5 sm:right-6 h-12 px-5 bg-surface-dark text-white rounded-full text-sm font-semibold flex items-center gap-2 shadow-[0_4px_20px_rgba(0,0,0,0.25)] cursor-pointer z-50 hover:shadow-[0_6px_28px_rgba(0,0,0,0.35)] active:scale-95 transition-shadow duration-300"
+        className="fixed bottom-6 right-5 sm:right-6 h-12 px-5 bg-surface-dark text-white rounded-full text-sm font-semibold flex items-center gap-2 shadow-[0_4px_20px_rgba(0,0,0,0.25)] cursor-pointer z-30 hover:shadow-[0_6px_28px_rgba(0,0,0,0.35)] active:scale-95 transition-shadow duration-300"
         onClick={() => setShowAddModal(true)}
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}

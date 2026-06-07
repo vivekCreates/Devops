@@ -28,9 +28,9 @@ const getSummaryNumbers = async (userId: string) => {
   };
 };
 
-export const getWeeklyProgress = async (userId: string) => {
-  const user = await getUserOrThrow(userId);
-  const today = getTodayLocalDate(user.timezone);
+export const getWeeklyProgress = async (userId: string, timezone?: string) => {
+  const tz = timezone ?? (await getUserOrThrow(userId)).timezone;
+  const today = getTodayLocalDate(tz);
   const startDate = addDaysToLocalDate(today, -6);
 
   const [groupedCompletions, groupedFreezes] = await Promise.all([
@@ -81,9 +81,9 @@ export const getWeeklyProgress = async (userId: string) => {
   };
 };
 
-export const getActivityHeatmap = async (userId: string) => {
-  const user = await getUserOrThrow(userId);
-  const today = getTodayLocalDate(user.timezone);
+export const getActivityHeatmap = async (userId: string, timezone?: string) => {
+  const tz = timezone ?? (await getUserOrThrow(userId)).timezone;
+  const today = getTodayLocalDate(tz);
   const startDate = addDaysToLocalDate(today, -30);
 
   const [groupedCompletions, groupedFreezes] = await Promise.all([
@@ -171,8 +171,8 @@ export const getHabitLeaderboard = async (userId: string) => {
 };
 
 export const getDashboard = async (userId: string) => {
-  await ensureMonthlyFreezeCredits(userId);
-  const user = await getUserOrThrow(userId);
+  let user = await getUserOrThrow(userId);
+  user = await ensureMonthlyFreezeCredits(user);
   const today = getTodayLocalDate(user.timezone);
 
   const habits = await prisma.habit.findMany({
@@ -199,8 +199,8 @@ export const getDashboard = async (userId: string) => {
   const completedToday = habits.filter((habit) => habit.completions.length > 0).length;
   const completionRate = habits.length === 0 ? 0 : Math.round((completedToday / habits.length) * 100);
   const [weeklyProgress, heatmap, leaderboard, summary] = await Promise.all([
-    getWeeklyProgress(userId),
-    getActivityHeatmap(userId),
+    getWeeklyProgress(userId, user.timezone),
+    getActivityHeatmap(userId, user.timezone),
     getHabitLeaderboard(userId),
     getSummaryNumbers(userId),
   ]);

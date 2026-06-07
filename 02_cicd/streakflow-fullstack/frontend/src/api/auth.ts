@@ -27,3 +27,13 @@ export const logoutApi = async () => {
 export const getCurrentUserApi = async () => {
   return apiClient.get("/auth/me");
 };
+
+export const updateProfileApi = async (data: FormData) => {
+  return apiClient.patch("/auth/me", data, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+};
+
+export const googleLoginApi = async (accessToken: string) => {
+  return apiClient.post("/auth/google", { accessToken });
+};
