@@ -12,7 +12,7 @@ const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [agreed, setAgreed] = useState(false)
-  const { register, googleLogin, isLoading, error } = useAuthStore();
+  const { register, googleLogin, isLoading } = useAuthStore();
   const { goToHome } = useNavigator();
 
   const googleLoginAction = useGoogleLogin({
