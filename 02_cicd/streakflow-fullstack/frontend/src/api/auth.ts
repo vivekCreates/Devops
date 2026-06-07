@@ -29,9 +29,7 @@ export const getCurrentUserApi = async () => {
 };
 
 export const updateProfileApi = async (data: FormData) => {
-  return apiClient.patch("/auth/me", data, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  return apiClient.patch("/auth/me", data);
 };
 
 export const googleLoginApi = async (accessToken: string) => {

@@ -48,7 +48,7 @@ export const HabitItem = ({ habit, index, onEdit, onDelete }: Props) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shrink-0">
+      <div className="flex items-center gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 shrink-0">
         <motion.button
           className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-sf-teal/10 flex items-center justify-center text-sf-teal hover:bg-sf-teal/20 cursor-pointer transition-colors duration-200"
           onClick={(e) => { e.stopPropagation(); onEdit(habit); }}

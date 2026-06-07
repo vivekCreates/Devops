@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { completeHabitApi, createHabitApi, deleteHabitApi, getHabitsApi, updateHabitApi } from "../api/habit";
+import { completeHabitApi, createHabitApi, deleteHabitApi, getHabitsApi, updateHabitApi, freezeHabitApi } from "../api/habit";
 import toast from "react-hot-toast";
 
 type HabitStatus = "ACTIVE" | "INACTIVE" | "COMPLETED";
@@ -191,7 +191,6 @@ export const useHabitStore = create<HabitState>((set,get) => ({
     freezeHabit: async (habitId) => {
         set({isLoading:true,error:null})
         try {
-            const { freezeHabitApi } = await import("../api/habit");
             const {data} = await freezeHabitApi(habitId)
             if(!data.success){
                 throw new Error(data.message || "Failed to freeze habit")
